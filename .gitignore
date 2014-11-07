@@ -1,0 +1,7 @@
+.DS_Store
+*.pyc
+venv
+.htpasswd
+/freelance/freelance/media/*
+/freelance/freelance/settings_local.py
+/freelance/freelance/settings_server.py

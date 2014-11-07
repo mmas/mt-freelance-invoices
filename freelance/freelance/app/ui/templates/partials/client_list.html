@@ -1,0 +1,7 @@
+{% for object in object_list %}
+<tr>
+    <td><span onclick="showEditObject('{% url "client" object.pk %}')">{{object.name}}</span></td>
+    <td>{% if object.address %}{{object.address|linebreaks}}{% endif %}</td>
+    <td>{% if object.email %}{{object.email}}{% endif %}</td>
+</tr>
+{% endfor %}

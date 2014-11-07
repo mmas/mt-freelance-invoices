@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% load staticfiles i18n %}
+
+{% block main_class%}
+invoice-list
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+    NEW_URL = '{% url "invoice_new" %}';
+    EDIT_URL = undefined;
+    LIST_URL = '{% url "invoices" %}';
+</script>
+{{block.super}}
+{% endblock %}
+
+{% block messages %}
+{{block.super}}
+<div id="msg-object-created" class="message message-info hidden">{% trans "Invoice created" %}.</div>
+<div id="msg-object-updated" class="message message-info hidden">{% trans "Invoice updated" %}.</div>
+<div id="msg-object-deleted" class="message message-info hidden">{% trans "Invoice deleted" %}.</div>
+{% endblock %}
+
+{% block content %}
+<header>
+    <div class="breadcrumbs" role="navigation">
+        <a href="/" class="glyphicon glyphicon-home" title="{% trans 'Home' %}"></a>
+        / <span>{% trans "Invoices" %}</span>
+        / <h2>{% trans "List" %}</h2>
+    </div>
+    <div class="header-buttons">
+        <button data-toggle="modal" data-target="#object-new"><i class="glyphicon glyphicon-plus"></i>{% trans "New invoice" %}</button>
+        {% comment %}
+        <button data-toggle="modal" data-target="#export"><i class="glyphicon glyphicon-cloud-download"></i>{% trans "Export" %}</button>
+        {% endcomment %}
+    </div>
+</header>
+<table class="table">
+    <thead>
+        <tr>
+            <th>{% trans "Number" %}</th>
+            <th>{% trans "Date" %}</th>
+            <th>{% trans "Client" %}</th>
+            <th>{% trans "Subtotal" %} (&pound;)</th>
+            <th>{% trans "Tax" %} (&pound;)</th>
+            <th>{% trans "Total" %} (&pound;)</th>
+            <th>{% trans "Paid" %}</th>
+        </tr>
+    </thead>
+    <tbody id="object-list">
+        {% include "partials/invoice_list.html" %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" id="object-new" tabindex="-1" role="dialog" aria-labelledby="new" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <span class="modal-title">{% trans "New invoice" %}</span>
+            </div>
+            <div class="modal-body">
+            ...
+            </div>
+            <div class="modal-footer">
+                <button class="text-primary" onclick="submitForm(this)">{% trans "Create" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="object-edit" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <span class="modal-title">{% trans "Edit invoice" %}</span>
+            </div>
+            <div class="modal-body">
+            ...
+            </div>
+            <div class="modal-footer">
+                <button class="text-success" onclick="openFile(event)">{% trans "View" %}</button>
+                <button class="text-danger" onclick="deleteObject(event)">{% trans "Delete" %}</button>
+                <button class="text-primary" onclick="submitForm(this)">{% trans "Update" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="export" tabindex="-1" role="dialog" aria-labelledby="export" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <span class="modal-title">{% trans "Export" %}</span>
+            </div>
+            <div class="modal-body">
+            ...
+            </div>
+            <div class="modal-footer">
+                <button class="text-primary">{% trans "Export" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

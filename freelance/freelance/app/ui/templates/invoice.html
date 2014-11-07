@@ -1,0 +1,18 @@
+<form
+    class="form-horizontal"
+    role="form"
+    onsubmit="{% if object %}updateObject(event){% else %}createObject(event){% endif %}"
+    {% if object %}data-file="{{object.file.url}}"{% endif %}
+    enctype="multipart/form-data"
+    autocomplete="off"
+    spellcheck="false">
+{% csrf_token %}
+{% for field in form %}
+    <div class="form-group">
+        <label class="col-sm-2 control-label">{{field.label}}</label>
+        <div class="col-sm-10">
+            {{field}}
+        </div>
+    </div>
+{% endfor %}
+</form>

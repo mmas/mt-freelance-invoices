@@ -1,0 +1,11 @@
+{% for object in object_list %}
+<tr class="{% if object.status == 'draft' %}active{% elif object.status == 'sent' %}info{% endif %}">
+    <td><span onclick="showEditObject('{% url "invoice" object.pk %}')">{{object.number}}</span></td>
+    <td>{% if object.date %}{{object.date|date:"d/m/Y"}}{% endif %}</td>
+    <td>{{object.client.name}}</td>
+    <td>{{object.subtotal|floatformat:2}}</td>
+    <td>{{object.tax|floatformat:2}}</td>
+    <td>{{object.total|floatformat:2}}</td>
+    <td>{% if object.date_paid %}<time datetime="{{object.date_paid}}">{{object.date_paid|date:"d/m/Y"}}</time>{% endif %}</td>
+</tr>
+{% endfor %}
