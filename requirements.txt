@@ -1,0 +1,6 @@
+Django==1.7.1
+argparse==1.2.1
+psycopg2==2.5.4
+python-dateutil==2.2
+six==1.8.0
+wsgiref==0.1.2
