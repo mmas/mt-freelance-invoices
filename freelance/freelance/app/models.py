@@ -32,7 +32,7 @@ class Invoice(models.Model):
     status = models.CharField(max_length=10, default='draft')
 
     class Meta:
-        ordering = ('created',)
+        ordering = ('-date',)
 
     def __unicode__(self):
         return self.number
