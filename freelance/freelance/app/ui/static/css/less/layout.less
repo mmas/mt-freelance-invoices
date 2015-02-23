@@ -1,0 +1,86 @@
+body {
+    @gap: 20px;
+    @nav-width: 52px;
+    @menu-width: 270px;
+    position: relative;
+    height: 100%;
+    color: @text-color;
+    font-family: 'Ubuntu'; font-weight: 300; font-size: 17px;
+    > [role=nav] {
+        position: absolute; top: 0; left: 0;
+        width: @nav-width; height: 100%;
+        z-index: 100;
+        background-color: @secondary-color;
+        ul {
+            margin: 0; padding: 0;
+            li {
+                list-style: none;
+                display: block;
+                width: 100%; height: @nav-width;
+                a {
+                    .__icon();
+                    color: white;
+                    display: block;
+                    width: 100%; height: 100%;
+                    text-align: center;
+                    font-size: 23px;
+                    padding-top: 11px;
+                    &:hover {
+                        background-color: lighten(@secondary-color, 5%);
+                    }
+                    &.active {
+                        background-color: @primary-color;
+                    }
+                    &.home {
+                        .__icon-home();
+                    }
+                    &.invoices {
+                        .__icon-list();
+                    }
+                    &.clients {
+                        .__icon-group();
+                    }
+                    &.calendar {
+                        .__icon-calendar();
+                    }
+                    &.settings {
+                        .__icon-cog();
+                    }
+                }
+            }
+        }
+    }
+    > [role=main] {
+        padding: @gap @gap+@menu-width @gap @gap+@nav-width;
+    }
+    > [role=menu] {
+        @gap: 14px;
+        position: absolute; top: 0; right: 0;
+        width: @menu-width; height: 100%;
+        background-color: @light-gray;
+        border-left: solid 1px @border-color;
+        h1 {
+            margin: 0px;
+            padding: @gap @gap 10px;
+            font-size: 32px;
+            font-weight: 300;
+        }
+        ul {
+            margin: 0; padding: 0;
+            font-size: 21px;
+            li {
+                list-style: none;
+                display: block;
+                a,
+                span {
+                    display: block;
+                    cursor: pointer;
+                    padding: 5px @gap 7px;
+                    &:hover {
+                        color: @primary-color;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,58 @@
+* {
+    box-sizing: border-box;
+}
+html {
+    height: 100%;
+}
+h1, h2, h3, h4, h5, h6 {
+    cursor: default;
+}
+input, textarea {
+    border: solid 1px @border-color;
+    padding: 2px 5px;
+}
+a, a:hover, a:visited {
+    text-decoration: none;
+    color: @primary-color;
+    font-weight: 400;
+}
+table {
+    &.full {
+        width: 100%;
+        th {
+            border-width: 0 0 2px;
+        }
+        td {
+            border-width: 1px 0;
+        }
+    }
+    &.transposed {
+        th,
+        td {
+            border-width: 0;
+        }
+        th {
+            text-align: right;
+            padding-right: 15px;
+        }
+        &.form {
+            th,
+            td {
+                vertical-align: middle;
+            }
+        }
+    }
+}
+th, td {
+    text-align: left;
+    border-style: solid;
+    border-color: @border-color;
+    padding: 6px 7px;
+    vertical-align: top;
+    &.number {
+        text-align: right;
+    }
+}
+th {
+    font-weight: 500;
+}

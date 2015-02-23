@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% load staticfiles i18n %}
+
+{% block main %}
+<div id="calendar"></div>
+<script type="text/javascript">
+calendar = new widgets.Calendar(document.getElementById('calendar'), {
+    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+    months: ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
+    prev: 'previous',
+    next: 'next',
+    today: 'today'
+});
+calendar = new pages.Calendar(calendar);
+</script>
+{% endblock %}
+
+{% block menu %}
+<aside role="menu">
+    <h1>{% trans "Calendar" %}</h1>
+    <ul>
+        <li><span onclick="calendar.selectDay()">{% trans "Select day" %} / {% trans "Deselect day" %}</span></li>
+        <li><span onclick="calendar.selectHalfDay()">{% trans "Select half day" %}</span></li>
+        <li><span onclick="calendar.selectWorkweek()">{% trans "Select workweek" %}</span></li>
+        <li><span onclick="calendar.selectWeek()">{% trans "Select week" %}</span></li>
+        <li><span onclick="calendar.createInvoice()">{% trans "Create invoice" %}</span></li>
+    </ul>
+</aside>
+{% endblock %}

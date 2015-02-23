@@ -37,6 +37,8 @@ TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'freelance/app/ui/templates'),)
 MEDIA_ROOT = os.path.join(BASE_DIR, 'freelance/media')
 MEDIA_URL = '/media/'
 
+AUTH_USER_MODEL = 'app.User'
+
 try:
     from settings_local import *
 except ImportError:

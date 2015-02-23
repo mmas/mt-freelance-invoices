@@ -6,6 +6,10 @@ from freelance.app import views
 
 urlpatterns = patterns('',
 
+    url(r'^$',
+        views.HomeView.as_view(),
+        name='home'),
+
     url(r'^login$',
         views.LoginView.as_view(),
         name='login'),
@@ -14,29 +18,41 @@ urlpatterns = patterns('',
         views.LogoutView.as_view(),
         name='logout'),
 
-    url(r'^invoices/list$',
+    url(r'^invoices$',
         views.InvoiceListView.as_view(),
         name='invoices'),
 
-    url(r'^invoices/list/new$',
+    url(r'^invoices/new$',
         views.InvoiceView.as_view(),
         name='invoice_new'),
 
-    url(r'^invoices/list/(?P<pk>\d+)$',
+    url(r'^invoices/(?P<number>.*)$',
         views.InvoiceView.as_view(),
         name='invoice'),
 
-    url(r'^invoices/clients$',
+    url(r'^clients$',
         views.ClientListView.as_view(),
         name='clients'),
 
-    url(r'^invoices/clients/new$',
+    url(r'^clients/new$',
         views.ClientView.as_view(),
         name='client_new'),
 
-    url(r'^invoices/clients/(?P<pk>\d+)$',
+    url(r'^clients/(?P<pk>\d+)$',
         views.ClientView.as_view(),
         name='client'),
+
+    url(r'^calendar$',
+        views.CalendarView.as_view(),
+        name='calendar'),
+
+    url(r'^api/day$',
+        views.DayJsonView.as_view(),
+        name='api_day'),
+
+    url(r'^api/days$',
+        views.DayListJsonView.as_view(),
+        name='api_days'),
 )
 
 if settings.DEBUG:

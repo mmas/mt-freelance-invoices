@@ -1,18 +1,25 @@
-<form
-    class="form-horizontal"
-    role="form"
-    onsubmit="{% if object %}updateObject(event){% else %}createObject(event){% endif %}"
-    {% if object %}data-file="{{object.file.url}}"{% endif %}
-    enctype="multipart/form-data"
-    autocomplete="off"
-    spellcheck="false">
-{% csrf_token %}
-{% for field in form %}
-    <div class="form-group">
-        <label class="col-sm-2 control-label">{{field.label}}</label>
-        <div class="col-sm-10">
-            {{field}}
-        </div>
-    </div>
-{% endfor %}
+{% extends "base.html" %}
+
+{% load staticfiles i18n %}
+
+{% block main %}
+<form id="form" method="POST" enctype="multipart/form-data" autocomplete="off" spellcheck="false">
+    {% csrf_token %}
+    <table class="transposed form">
+        {% for field in form %}
+        <tr><th>{{field.label}}</th><td>{{field}}</td></tr>
+        {% endfor %}
+    </table>
 </form>
+{% endblock %}
+
+{% block menu %}
+<aside role="menu">
+    <h1>{% trans "Edit invoice" %}</h1>
+    <ul>
+        <li><span onclick="document.getElementById('form').submit();">{% trans "Save" %}</span></li>
+        <li><span>{% trans "Delete" %}</span></li>
+        <li><span>{% trans "Cancel" %}</span></li>
+    </ul>
+</aside>
+{% endblock %}

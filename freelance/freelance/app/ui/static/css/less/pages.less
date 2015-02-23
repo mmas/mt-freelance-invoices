@@ -1,0 +1,87 @@
+#calendar {
+    header {
+        height: 32px;
+        .month,
+        .year {
+            margin-right: 4px;
+            text-transform: uppercase;
+            line-height: 32px;
+        }
+        button {
+            border: none;
+            background: none;
+            font-size: 0;
+            float: right;
+            width: 32px; height: 32px;
+            apearance: none;
+            .__icon();
+            &.prev { .__icon-left(); }
+            &.next { .__icon-right(); }
+            &.today { .__icon-down(); }
+            &:before { font-size: 20px; }
+            &:hover { color: @primary-color; }
+        }
+    }
+    table {
+        width: 100%;
+        th, td {
+            border-style: solid;
+            border-width: 1px;
+            width: 100/7%;
+        }
+        thead {
+            tr {
+                th {
+                    text-transform: capitalize;
+                    text-align: center;
+                }
+            }
+        }
+        tbody {
+            tr {
+                td {
+                    &.day {
+                        position: relative;
+                        height: 90px;
+                        color: @border-color;
+                        &.prev,
+                        &.next {
+                            pointer-events: none;
+                            opacity: 0.4;
+                        }
+                        &.today {
+                            .day-number {
+                                color: @primary-color;
+                            }
+                        }
+                        &.selected {
+                            background: fadeout(@primary-color, 90%);
+                        }
+                        .__icon();
+                        .__icon-deselected();
+                        &:before {
+                            position: absolute; bottom: 5px; left: 5px;
+                            font-size: 12px;
+                            padding: 0; margin: 0;
+                            pointer-events: none;
+                        }
+                        &[data-selected="1"] {
+                            .__icon-selected();
+                            color: @primary-color;
+                        }
+                        &[data-selected="2"] {
+                            .__icon-halfselected();
+                            color: @primary-color;
+                        }
+                    }
+                    .day-number {
+                        position: absolute; top: 0px; right: 3px;
+                        pointer-events: none;
+                        font-size: 23px; font-weight: 400;
+                        color: #bbb;
+                    }
+                }
+            }
+        }
+    }
+}

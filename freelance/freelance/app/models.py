@@ -1,7 +1,8 @@
 import re
 
 from django.db import models
-from django.utils import timezone
+from django.contrib.auth.models import AbstractBaseUser
+# from django.utils import timezone
 
 
 def get_filename(instance, filename):
@@ -11,8 +12,8 @@ def get_filename(instance, filename):
 
 class Client(models.Model):
     name = models.CharField(max_length=100)
-    address = models.TextField(blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
+    address = models.TextField(blank=True)
+    email = models.EmailField()
 
     def __unicode__(self):
         return self.name
@@ -22,24 +23,55 @@ class Invoice(models.Model):
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
     number = models.CharField(max_length=100, unique=True)
-    date = models.DateTimeField(blank=True, null=True)
+    date_sent = models.DateTimeField(blank=True, null=True)  # Default=created.
     date_paid = models.DateTimeField(blank=True, null=True)
-    client = models.ForeignKey(Client)
+    client = models.ForeignKey(Client, null=True)
     subtotal = models.FloatField(blank=True, null=True)
     tax = models.FloatField(blank=True, null=True)
     total = models.FloatField(blank=True, null=True)
-    file = models.FileField(upload_to=get_filename)
-    status = models.CharField(max_length=10, default='draft')
+    pdf = models.FileField(upload_to=get_filename)
+    daily_rate = models.FloatField(blank=True, null=True)
+    status = models.IntegerField(default=0)  # (0|1|2)=(draft|sent|paid).
 
     class Meta:
-        ordering = ('-date',)
+        ordering = ('-created',)
 
     def __unicode__(self):
         return self.number
 
-    def save(self, **kwargs):
-        if self.subtotal is not None and self.tax is not None:
-            self.total = self.subtotal + self.tax
-        if self.status == 'paid' and not self.date_paid:
-            self.date_paid = timezone.now()
-        return super(Invoice, self).save(**kwargs)
+    # def save(self, **kwargs):
+    #     if self.subtotal is not None and self.tax is not None:
+    #         self.total = self.subtotal + self.tax
+    #     if self.status == 'paid' and not self.date_paid:
+    #         self.date_paid = timezone.now()
+    #     return super(Invoice, self).save(**kwargs)
+
+
+class Day(models.Model):
+    date = models.DateField(unique=True)
+    status = models.IntegerField(default=0)  # (nosel|selected|halfsel).
+    invoice = models.ForeignKey(Invoice, related_name='days_worked', null=True)
+
+    class Meta:
+        ordering = ('date',)
+
+    def __unicode__(self):
+        return '%s' % self.date
+
+
+class Settings(models.Model):
+    email_address = models.CharField(max_length=100, blank=True)
+    email_password = models.CharField(max_length=100, blank=True)
+    email_smtp = models.CharField(max_length=100, blank=True)
+    company_address = models.TextField()
+    company_info = models.TextField()
+    company_payment = models.TextField()
+    default_daily_rate = models.FloatField()
+    default_tax = models.FloatField()  # [0,1].
+
+
+class User(AbstractBaseUser):
+    username = models.CharField(max_length=100, unique=True)
+    settings = models.OneToOneField(Settings, null=True)
+
+    USERNAME_FIELD = 'username'

@@ -1,19 +1,10 @@
 {% load i18n %}
-<aside>
-    <h2>{% trans "Invoices" %}</h2>
+<aside role="nav">
     <ul>
-        <li><a href="{% url 'invoices' %}"><i class="glyphicon glyphicon-list"></i>{% trans "List" %}</a></li>
-        <li><a href="{% url 'clients' %}"><i class="glyphicon glyphicon-user"></i>{% trans "Clients" %}</a></li>
-        {% comment %}
-        <li><a href="#"><i class="glyphicon glyphicon-stats"></i>{% trans "Stats" %}</a></li>
-        {% endcomment %}
+        <li><a class="home" href="{% url 'home' %}" title="{% trans 'Home' %}"></a></li>
+        <li><a class="invoices" href="{% url 'invoices' %}" title="{% trans 'Invoices' %}"></a></li>
+        <li><a class="clients active" href="{% url 'clients' %}" title="{% trans 'Clients' %}"></a></li>
+        <li><a class="calendar" href="{% url 'calendar' %}" title="{% trans 'Calendar' %}"></a></li>
+        <li><a class="settings" href="" title="{% trans 'Settings' %}"></a></li>
     </ul>
-    {% comment %}
-    <h2>{% trans "Documents" %}</h2>
-    <ul>
-        <li><a href="#"><i class="glyphicon glyphicon-folder-close"></i>Statements</a></li>
-        <li><a href="#"><i class="glyphicon glyphicon-folder-close"></i>Contracts</a></li>
-        <li><a href="#"><i class="glyphicon glyphicon-folder-close"></i>Payments</a></li>
-    </ul>
-    {% endcomment %}
 </aside>

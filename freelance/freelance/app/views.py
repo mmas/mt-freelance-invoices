@@ -1,6 +1,6 @@
 import json
 
-from django.views.generic import View, ListView, TemplateView
+from django.views.generic import View, ListView, TemplateView, UpdateView
 from django.views.generic.edit import ModelFormMixin
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 from django.forms.models import model_to_dict
@@ -9,7 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 
-from freelance.app.models import Invoice, Client
+from freelance.app.models import Invoice, Client, Day
 from freelance.app.forms import InvoiceForm, ClientForm
 from freelance.app.utils import format_json
 
@@ -83,29 +83,57 @@ class MultipleObjectView(LoginRequiredMixin, ListView):
         return [template_name]
 
 
-class InvoiceListView(MultipleObjectView):
+class HomeView(TemplateView):
+    template_name = 'home.html'
+
+
+class InvoiceListView(ListView):
     model = Invoice
     template_name = 'invoice_list.html'
-    ajax_template_name = 'partials/invoice_list.html'
 
 
-class InvoiceView(SingleObjectView):
+class ClientListView(ListView):
+    model = Client
+    template_name = 'client_list.html'
+
+
+class InvoiceView(UpdateView):
     model = Invoice
-    form_class = InvoiceForm
+    # form_class = InvoiceForm
     template_name = 'invoice.html'
     exclude_fields_response = ('file',)
 
+    def get_object(self, queryset=None):
+        return self.model.objects.get(number=self.kwargs['number'])
 
-class ClientListView(MultipleObjectView):
+
+class ClientView(UpdateView):
     model = Client
-    template_name = 'client_list.html'
-    ajax_template_name = 'partials/client_list.html'
-
-
-class ClientView(SingleObjectView):
-    model = Client
-    form_class = ClientForm
+    # form_class = ClientForm
     template_name = 'client.html'
+
+
+class CalendarView(TemplateView):
+    template_name = 'calendar.html'
+
+
+class DayListJsonView(View):
+
+    def get(self, request, *args, **kwargs):
+        days = Day.objects.all()
+        return HttpResponse(json.dumps(list(days.values('date', 'status')),
+                                       default=format_json),
+                            content_type='application/json')
+
+
+class DayJsonView(View):
+
+    def post(self, request, *args, **kwargs):
+        data = json.loads(request.body)
+        day, _ = Day.objects.get_or_create(date=data['date'])
+        day.status = data['status']
+        day.save()
+        return HttpResponse(status=201)
 
 
 class LoginView(TemplateView):
