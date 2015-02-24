@@ -1,10 +1,10 @@
 {% load i18n %}
 <aside role="nav">
     <ul>
-        <li><a class="home" href="{% url 'home' %}" title="{% trans 'Home' %}"></a></li>
-        <li><a class="invoices" href="{% url 'invoices' %}" title="{% trans 'Invoices' %}"></a></li>
-        <li><a class="clients active" href="{% url 'clients' %}" title="{% trans 'Clients' %}"></a></li>
-        <li><a class="calendar" href="{% url 'calendar' %}" title="{% trans 'Calendar' %}"></a></li>
-        <li><a class="settings" href="" title="{% trans 'Settings' %}"></a></li>
+        <li><a class="home{% if section == 'home' %} active{% endif %}" href="{% url 'home' %}" title="{% trans 'Home' %}"></a></li>
+        <li><a class="invoices{% if section == 'invoices' %} active{% endif %}" href="{% url 'invoices' %}" title="{% trans 'Invoices' %}"></a></li>
+        <li><a class="clients{% if section == 'clients' %} active{% endif %}" href="{% url 'clients' %}" title="{% trans 'Clients' %}"></a></li>
+        <li><a class="calendar{% if section == 'calendar' %} active{% endif %}" href="{% url 'calendar' %}" title="{% trans 'Calendar' %}"></a></li>
+        <li><a class="settings{% if section == 'settings' %} active{% endif %}" href="{% url 'settings' %}" title="{% trans 'Settings' %}"></a></li>
     </ul>
 </aside>

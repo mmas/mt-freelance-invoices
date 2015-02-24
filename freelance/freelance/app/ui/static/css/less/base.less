@@ -9,7 +9,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 input, textarea {
     border: solid 1px @border-color;
-    padding: 2px 5px;
+    padding: 5px 8px;
+    width: 400px;
+}
+textarea {
+    resize: none;
+    height: 113px;  // 5 rows
 }
 a, a:hover, a:visited {
     text-decoration: none;
@@ -40,6 +45,13 @@ table {
             td {
                 vertical-align: middle;
             }
+        }
+    }
+    .error {
+        color: @error-color;
+        input,
+        textarea {
+            border-color: @error-color;
         }
     }
 }

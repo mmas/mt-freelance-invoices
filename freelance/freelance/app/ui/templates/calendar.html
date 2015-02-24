@@ -2,6 +2,8 @@
 
 {% load staticfiles i18n %}
 
+{% block sidebar %}{% include "sidebar.html" with section='calendar' %}{% endblock %}
+
 {% block main %}
 <div id="calendar"></div>
 <script type="text/javascript">

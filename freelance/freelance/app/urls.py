@@ -46,6 +46,10 @@ urlpatterns = patterns('',
         views.CalendarView.as_view(),
         name='calendar'),
 
+    url(r'^settings$',
+        views.SettingsView.as_view(),
+        name='settings'),
+
     url(r'^api/day$',
         views.DayJsonView.as_view(),
         name='api_day'),

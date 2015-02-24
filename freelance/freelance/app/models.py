@@ -1,8 +1,8 @@
 import re
 
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
-# from django.utils import timezone
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.utils import timezone
 
 
 def get_filename(instance, filename):
@@ -63,11 +63,29 @@ class Settings(models.Model):
     email_address = models.CharField(max_length=100, blank=True)
     email_password = models.CharField(max_length=100, blank=True)
     email_smtp = models.CharField(max_length=100, blank=True)
-    company_address = models.TextField()
-    company_info = models.TextField()
-    company_payment = models.TextField()
-    default_daily_rate = models.FloatField()
-    default_tax = models.FloatField()  # [0,1].
+    company_name = models.CharField(max_length=100, blank=True)
+    company_address = models.TextField(blank=True)
+    company_info = models.TextField(blank=True)
+    company_account = models.CharField(max_length=50, blank=True)
+    default_daily_rate = models.FloatField(default=0.)
+    default_tax = models.FloatField(default=.2)  # [0,1].
+
+
+class UserManager(BaseUserManager):
+
+    def create_user(self, username, password, **extra_fields):
+        now = timezone.now()
+        if not username:
+            raise ValueError('The given username must be set')
+        user = self.model(username=username, last_login=now, **extra_fields)
+        user.set_password(password)
+        user.settings = Settings.objects.create()
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, password, **extra_fields):
+        # Just defined to use the command-line
+        return self.create_user(username, password, **extra_fields)
 
 
 class User(AbstractBaseUser):
@@ -75,3 +93,5 @@ class User(AbstractBaseUser):
     settings = models.OneToOneField(Settings, null=True)
 
     USERNAME_FIELD = 'username'
+
+    objects = UserManager()

@@ -1,6 +1,6 @@
 pages.Calendar = function(calendar) {
 
-    var dates, i, selected_date;
+    var dates, selected_date;
 
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
@@ -43,30 +43,30 @@ pages.Calendar = function(calendar) {
                 saveDay(1);
             }
         }
-    }
+    };
 
     this.selectHalfDay = function() {
         if (selected_date) {
             calendar.get(selected_date.isodate()).attr('data-selected', 2);
             saveDay(2);
         }
-    }
+    };
 
     this.selectWorkweek = function() {
         if (selected_date) {
             calendar.get(selected_date.isodate()).parent().children().slice(0, 5).attr('data-selected', 1);
         }
-    }
+    };
 
     this.selectWeek = function() {
         if (selected_date) {
             calendar.get(selected_date.isodate()).parent().children().attr('data-selected', 1);
         }
-    }
+    };
 
     this.createInvoice = function() {
 
-    }
+    };
 
     function saveDay(status) {
         $.ajax({
@@ -77,10 +77,10 @@ pages.Calendar = function(calendar) {
     }
 
     function renderSelectedDays() {
-        var $cell;
-        for (i=0; i<dates.length; i++) {
-            $cell = calendar.get(dates[i].date)
-            if ($cell) $cell.attr('data-selected', dates[i].status);
+        var $cell, i, xi;
+        for (i=0; xi=dates[i]; i++) {
+            $cell = calendar.get(xi.date);
+            if ($cell) $cell.attr('data-selected', xi.status);
         }
     }
 

@@ -1,16 +1,14 @@
 import json
 
+from django.core.urlresolvers import reverse
 from django.views.generic import View, ListView, TemplateView, UpdateView
-from django.views.generic.edit import ModelFormMixin
-from django.views.generic.detail import SingleObjectTemplateResponseMixin
-from django.forms.models import model_to_dict
 from django.http import HttpResponse
-from django.core.exceptions import ImproperlyConfigured
+# from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 
-from freelance.app.models import Invoice, Client, Day
-from freelance.app.forms import InvoiceForm, ClientForm
+from freelance.app.models import Invoice, Client, Day, Settings
+# from freelance.app.forms import InvoiceForm, ClientForm
 from freelance.app.utils import format_json
 
 
@@ -23,81 +21,33 @@ class LoginRequiredMixin(object):
             request, *args, **kwargs)
 
 
-class SingleObjectView(LoginRequiredMixin,
-                       ModelFormMixin,
-                       SingleObjectTemplateResponseMixin,
-                       View):
-    exclude_fields_response = ()
+# def get_template_names(self):
+#     if self.request.is_ajax():
+#         template_name = self.ajax_template_name or self.template_name
+#     else:
+#         template_name = self.template_name
 
-    def get(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        if 'pk' in kwargs:
-            self.object = self.get_object()
-            form = form_class(instance=self.object)
-        else:
-            self.object = None
-            form = form_class(**self.get_form_kwargs())
-        return self.render_to_response(self.get_context_data(form=form))
+#     if template_name is None:
+#         raise ImproperlyConfigured('template_name missed')
 
-    def post(self, request, *args, **kwargs):
-        if 'pk' in kwargs:
-            self.object = self.get_object()
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
-
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        self.object.delete()
-        return HttpResponse(status=201)
-
-    def form_valid(self, form):
-        obj = form.save()
-        data = model_to_dict(obj, exclude=self.exclude_fields_response)
-        return self._json_response(data)
-
-    def form_invalid(self, form):
-        return self._json_response(dict(form.errors), 400)
-
-    def _json_response(self, data, status=200):
-        return HttpResponse(json.dumps(data, default=format_json),
-                            content_type='application/json',
-                            status=status)
+#     return [template_name]
 
 
-class MultipleObjectView(LoginRequiredMixin, ListView):
-    template_name = None
-    ajax_template_name = None
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            template_name = self.ajax_template_name or self.template_name
-        else:
-            template_name = self.template_name
-
-        if template_name is None:
-            raise ImproperlyConfigured('template_name missed')
-
-        return [template_name]
-
-
-class HomeView(TemplateView):
+class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'home.html'
 
 
-class InvoiceListView(ListView):
+class InvoiceListView(LoginRequiredMixin, ListView):
     model = Invoice
     template_name = 'invoice_list.html'
 
 
-class ClientListView(ListView):
+class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'client_list.html'
 
 
-class InvoiceView(UpdateView):
+class InvoiceView(LoginRequiredMixin, UpdateView):
     model = Invoice
     # form_class = InvoiceForm
     template_name = 'invoice.html'
@@ -107,17 +57,17 @@ class InvoiceView(UpdateView):
         return self.model.objects.get(number=self.kwargs['number'])
 
 
-class ClientView(UpdateView):
+class ClientView(LoginRequiredMixin, UpdateView):
     model = Client
     # form_class = ClientForm
     template_name = 'client.html'
 
 
-class CalendarView(TemplateView):
+class CalendarView(LoginRequiredMixin, TemplateView):
     template_name = 'calendar.html'
 
 
-class DayListJsonView(View):
+class DayListJsonView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         days = Day.objects.all()
@@ -126,7 +76,7 @@ class DayListJsonView(View):
                             content_type='application/json')
 
 
-class DayJsonView(View):
+class DayJsonView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
@@ -134,6 +84,17 @@ class DayJsonView(View):
         day.status = data['status']
         day.save()
         return HttpResponse(status=201)
+
+
+class SettingsView(LoginRequiredMixin, UpdateView):
+    model = Settings
+    template_name = 'settings.html'
+
+    def get_object(self, queryset=None):
+        return self.request.user.settings
+
+    def get_success_url(self):
+        return reverse('settings')
 
 
 class LoginView(TemplateView):
@@ -149,7 +110,7 @@ class LoginView(TemplateView):
         return redirect('login')
 
 
-class LogoutView(View):
+class LogoutView(LoginRequiredMixin, View):
 
     def get(self, request):
         logout(request)

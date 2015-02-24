@@ -7,7 +7,7 @@ body {
     color: @text-color;
     font-family: 'Ubuntu'; font-weight: 300; font-size: 17px;
     > [role=nav] {
-        position: absolute; top: 0; left: 0;
+        position: fixed; top: 0; left: 0;
         width: @nav-width; height: 100%;
         z-index: 100;
         background-color: @secondary-color;
@@ -55,7 +55,7 @@ body {
     }
     > [role=menu] {
         @gap: 14px;
-        position: absolute; top: 0; right: 0;
+        position: fixed; top: 0; right: 0;
         width: @menu-width; height: 100%;
         background-color: @light-gray;
         border-left: solid 1px @border-color;
@@ -76,6 +76,8 @@ body {
                     display: block;
                     cursor: pointer;
                     padding: 5px @gap 7px;
+                    color: @text-color;
+                    font-weight: 300;
                     &:hover {
                         color: @primary-color;
                     }

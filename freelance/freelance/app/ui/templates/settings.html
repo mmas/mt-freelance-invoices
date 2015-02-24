@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% load staticfiles i18n %}
+
+{% block sidebar %}{% include "sidebar.html" with section='settings' %}{% endblock %}
+
+{% block main %}
+<form id="form" method="POST" autocomplete="off" spellcheck="false">
+    {% csrf_token %}
+    <table class="transposed form">
+        {% for field in form %}
+        <tr{% if field.errors %} class="error"{% endif %}><th>{{field.label}}</th><td>{{field}}</td></tr>
+        {% endfor %}
+    </table>
+</form>
+{% endblock %}
+
+{% block menu %}
+<aside role="menu">
+    <h1>{% trans "Settings" %}</h1>
+    <ul>
+        <li><span onclick="document.getElementById('form').submit();">{% trans "Save" %}</span></li>
+    </ul>
+</aside>
+{% endblock %}
