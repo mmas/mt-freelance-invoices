@@ -7,10 +7,17 @@ html {
 h1, h2, h3, h4, h5, h6 {
     cursor: default;
 }
-input, textarea {
+strong {
+    font-weight: 500;
+}
+input, textarea, select {
     border: solid 1px @border-color;
     padding: 5px 8px;
     width: 400px;
+}
+.inactive {
+    opacity: 0.4;
+    pointer-events: none;
 }
 textarea {
     resize: none;

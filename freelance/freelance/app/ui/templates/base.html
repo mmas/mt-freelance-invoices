@@ -3,15 +3,19 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title></title>
+        <title>freelance</title>
         <link rel="stylesheet" type="text/css" href="{% static 'css/main.min.css' %}">
         {% if debug %}
         <script type="text/javascript" src="{% static 'js/lib/jquery.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/lib/widgets/init.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/lib/widgets/calendar.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/pages/init.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/pages/calendar.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/lib/mustache.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/utils.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/widgets/init.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/widgets/calendar.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/widgets/popup.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/views/init.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/views/calendar.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/views/invoice.js' %}"></script>
         {% else %}
         <script type="text/javascript" src="{% static 'js/main.min.js' %}"></script>
         {% endif %}
@@ -20,5 +24,6 @@
         {% block sidebar %}{% include "sidebar.html" %}{% endblock %}
         <section role="main">{% block main %}{% endblock %}</section>
         {% block menu %}{% endblock %}
+        <div id="popups">{% block popups %}{% endblock %}</div>
     </body>
 </html>

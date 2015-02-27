@@ -11,24 +11,33 @@
             <th>{% trans "Number" %}</th>
             <th>{% trans "Date" %}</th>
             <th>{% trans "Client" %}</th>
-            <th class="number">{% trans "Subtotal" %} (&pound;)</th>
-            <th class="number">{% trans "Tax" %} (&pound;)</th>
+            <th>{% trans "Status" %}</th>
             <th class="number">{% trans "Total" %} (&pound;)</th>
-            <th>{% trans "Paid" %}</th>
         </tr>
     </thead>
     <tbody>
         {% for object in object_list %}
         <tr>
             <td><a href="{% url 'invoice' object.number %}">{{object.number}}</a></td>
-            <td>{% if object.date_sent %}{{object.date_sent|date:"d/m/Y"}}{% endif %}</td>
+            <td>{% if object.date %}{{object.date|date:"d/m/Y"}}{% endif %}</td>
             <td>{{object.client.name}}</td>
-            <td class="number">{{object.subtotal|floatformat:2}}</td>
-            <td class="number">{{object.tax|floatformat:2}}</td>
+            <td>{% if object.paid %}{% trans "Paid" %}
+                {% elif object.sent %}{% trans "Sent" %}
+                {% elif object.saved %}{% trans "Saved" %}
+                {% else %}{% trans "Draft" %}{% endif %}</td>
             <td class="number">{{object.total|floatformat:2}}</td>
-            <td>{% if object.date_paid %}<time datetime="{{object.date_paid}}">{{object.date_paid|date:"d/m/Y"}}</time>{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+{% endblock %}
+
+{% block menu %}
+<aside role="menu">
+    <h1>{% trans "Invoices" %}</h1>
+    <ul>
+        <li><a href="{% url 'invoice_new' %}?from=file">{% trans "New from file" %}</a></li>
+        <li><a href="">{% trans "New from calendar" %}</a></li>
+    </ul>
+</aside>
 {% endblock %}

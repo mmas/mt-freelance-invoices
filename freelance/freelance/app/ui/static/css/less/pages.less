@@ -65,13 +65,17 @@
                             padding: 0; margin: 0;
                             pointer-events: none;
                         }
-                        &[data-selected="1"] {
+                        &[data-selected] {
                             .__icon-selected();
                             color: @primary-color;
                         }
-                        &[data-selected="2"] {
+                        &[data-half] {
                             .__icon-halfselected();
                             color: @primary-color;
+                        }
+                        &[data-saved] {
+                            .__icon-selected();
+                            color: @border-color;
                         }
                     }
                     .day-number {
@@ -109,5 +113,60 @@
         color: @primary-color;
         font-weight: 500;
         text-transform: uppercase;
+    }
+}
+
+#sheet {
+    @gap: 17px;
+    width: 878px; height: 1212px; padding: 84px; // From A4@12px
+    border: solid 1px @border-color;
+    margin: 0 auto;
+    .company-name {
+        text-transform: uppercase;
+    }
+    .invoice-label {
+        text-transform: uppercase;
+    }
+    .company-address {
+        text-align: right;
+        text-transform: uppercase;
+    }
+    .company-info {
+        margin-bottom: @gap;
+    }
+    .invoice-info {
+        margin-bottom: @gap;
+    }
+    .client-info {
+        margin-bottom: @gap;
+    }
+    .company-payment {
+        margin-bottom: @gap;
+    }
+    table {
+        th, td {
+            border: solid 1px @text-color;
+            width: 176px;
+            text-align: left;
+        }
+        &.description {
+            margin-bottom: @gap;
+            thead {
+                tr {
+                    th {}
+                }
+            }
+            tbody {
+                tr {
+                    td {}
+                }
+            }
+        }
+        &.total {
+            tr {
+                th {}
+                td {}
+            }
+        }
     }
 }

@@ -7,6 +7,7 @@
 {% block main %}
 <div id="calendar"></div>
 <script type="text/javascript">
+var calendar;
 calendar = new widgets.Calendar(document.getElementById('calendar'), {
     days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
     months: ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'],
@@ -14,7 +15,7 @@ calendar = new widgets.Calendar(document.getElementById('calendar'), {
     next: 'next',
     today: 'today'
 });
-calendar = new pages.Calendar(calendar);
+view = new views.Calendar(calendar);
 </script>
 {% endblock %}
 
@@ -22,11 +23,11 @@ calendar = new pages.Calendar(calendar);
 <aside role="menu">
     <h1>{% trans "Calendar" %}</h1>
     <ul>
-        <li><span onclick="calendar.selectDay()">{% trans "Select day" %} / {% trans "Deselect day" %}</span></li>
-        <li><span onclick="calendar.selectHalfDay()">{% trans "Select half day" %}</span></li>
-        <li><span onclick="calendar.selectWorkweek()">{% trans "Select workweek" %}</span></li>
-        <li><span onclick="calendar.selectWeek()">{% trans "Select week" %}</span></li>
-        <li><span onclick="calendar.createInvoice()">{% trans "Create invoice" %}</span></li>
+        <li><span onclick="view.selectDay()">{% trans "Select day" %} / {% trans "Deselect day" %}</span></li>
+        <li><span onclick="view.selectHalfDay()">{% trans "Select half day" %}</span></li>
+        <li><span onclick="view.selectWorkweek()">{% trans "Select workweek" %}</span></li>
+        <li><span onclick="view.selectWeek()">{% trans "Select week" %}</span></li>
+        <li><a href="{% url 'invoice_new' %}">{% trans "Create invoice" %}</a></li>
     </ul>
 </aside>
 {% endblock %}

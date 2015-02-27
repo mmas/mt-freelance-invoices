@@ -18,17 +18,21 @@ urlpatterns = patterns('',
         views.LogoutView.as_view(),
         name='logout'),
 
-    url(r'^invoices$',
-        views.InvoiceListView.as_view(),
-        name='invoices'),
-
-    url(r'^invoices/new$',
+    url(r'^invoice$',
         views.InvoiceView.as_view(),
         name='invoice_new'),
 
-    url(r'^invoices/(?P<number>.*)$',
+    url(r'^invoice/list$',
+        views.InvoiceListView.as_view(),
+        name='invoices'),
+
+    url(r'^invoice/(?P<number>.*)$',
         views.InvoiceView.as_view(),
         name='invoice'),
+
+    url(r'^api/invoice/(?P<pk>\d+)$',
+        views.InvoiceJsonView.as_view(),
+        name='api_invoice'),
 
     url(r'^clients$',
         views.ClientListView.as_view(),

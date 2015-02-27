@@ -54,7 +54,6 @@ body {
         padding: @gap @gap+@menu-width @gap @gap+@nav-width;
     }
     > [role=menu] {
-        @gap: 14px;
         position: fixed; top: 0; right: 0;
         width: @menu-width; height: 100%;
         background-color: @light-gray;
@@ -62,12 +61,11 @@ body {
         h1 {
             margin: 0px;
             padding: @gap @gap 10px;
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 300;
         }
         ul {
             margin: 0; padding: 0;
-            font-size: 21px;
             li {
                 list-style: none;
                 display: block;
@@ -81,6 +79,77 @@ body {
                     &:hover {
                         color: @primary-color;
                     }
+                }
+            }
+        }
+    }
+    #popups {
+        width: 100%; height: 100%;
+        position: fixed; top: 0; left: 0;
+        z-index: 200;
+        background-color: rgba(0,0,0,0.5);
+        display: none;
+        > div {
+            @gap: 15px;
+            width: 600px;
+            display: none;
+            margin: 50px auto;
+            background-color: @secondary-color;
+            color: @light-gray;
+            header {
+                font-size: 22px;
+                border-bottom: solid 2px #222;
+                padding: @gap;
+                position: relative;
+                button {
+                    position: absolute; top: 0; right: 0;
+                    appearance: none;
+                    background: none;
+                    border: none;
+                    padding: @gap;
+                }
+            }
+            .content {
+                padding: @gap;
+                p {
+                    margin-top: 0;
+                    margin-bottom: @gap;
+                    &:last-child {
+                        margin-bottom: 0;
+                    }
+                }
+                form {
+                    input,
+                    textarea,
+                    select {
+                        background-color: @secondary-color;
+                        width: 100%;
+                        border: solid 2px #222;
+                    }
+                    select {
+                        appearance: none;
+                    }
+                    label {
+                        display: block;
+                        margin-bottom: 4px;
+                    }
+                    > div {
+                        margin-bottom: @gap;
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+                    }
+                }
+            }
+            footer {
+                border-top: solid 2px #222;
+                text-align: right;
+                button {
+                    appearance: none;
+                    border: none;
+                    background: none;
+                    padding: @gap;
+                    border-left: solid 2px #222;
                 }
             }
         }
