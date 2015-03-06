@@ -142,11 +142,18 @@ class InvoiceView(LoginRequiredMixin, generic.DetailView):
     def get(self, request, *args, **kwargs):
         if 'delete' in request.GET:
             return self.delete(request, *args, **kwargs)
-        resp = super(InvoiceView, self).get(request, *args, **kwargs)
-        if 'number' not in self.kwargs:
+
+        self.object = self.get_object()
+
+        if not self.object:
+            return HttpResponseRedirect(reverse('calendar'))
+
+        if 'number' not in kwargs:
             return HttpResponseRedirect(
                 reverse('invoice', args=[self.object.number]))
-        return resp
+
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
 
     def delete(self, request, *args, **kwargs):
         self.get_object().delete()
@@ -157,7 +164,7 @@ class InvoiceView(LoginRequiredMixin, generic.DetailView):
         /invoice/20150103
             get invoice from number
         /invoice
-            try to create an invoice from days, otherwise create empty invoice
+            try to create an invoice from days, return None otherwise
         /invoice?from=file
             force to creat an invoice from file
         """
@@ -170,8 +177,6 @@ class InvoiceView(LoginRequiredMixin, generic.DetailView):
         days = Day.objects.filter(invoice=None)
         if days:
             return self._get_object_from_days(days)
-
-        return self._get_new_object()
 
     def get_context_data(self, **kwargs):
         ctx = super(InvoiceView, self).get_context_data(**kwargs)

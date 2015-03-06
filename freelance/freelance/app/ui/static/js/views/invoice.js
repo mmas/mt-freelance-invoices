@@ -68,7 +68,6 @@ views.Invoice = function(data) {
             })
             .done(function() {
                 // TODO: render menu template.
-                alert('saved');
             });
         }
         else if (mode == 'paid') {
