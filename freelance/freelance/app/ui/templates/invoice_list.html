@@ -12,20 +12,20 @@
             <th>{% trans "Date" %}</th>
             <th>{% trans "Client" %}</th>
             <th>{% trans "Status" %}</th>
-            <th class="number">{% trans "Total" %} (&pound;)</th>
+            <th class="number">{% trans "Total" %}</th>
         </tr>
     </thead>
     <tbody>
         {% for object in object_list %}
         <tr>
             <td><a href="{% url 'invoice' object.number %}">{{object.number}}</a></td>
-            <td>{% if object.date %}{{object.date|date:"d/m/Y"}}{% endif %}</td>
+            <td>{% if object.date %}{{object.date__str}}{% endif %}</td>
             <td>{{object.client.name}}</td>
-            <td>{% if object.paid %}{% trans "Paid" %}
-                {% elif object.sent %}{% trans "Sent" %}
-                {% elif object.saved %}{% trans "Saved" %}
-                {% else %}{% trans "Draft" %}{% endif %}</td>
-            <td class="number">{{object.total|floatformat:2}}</td>
+            <td>{% if object.status == 0 %}{% trans "Draft" %}
+                {% elif object.status == 1 %}{% trans "Saved" %}
+                {% elif object.status == 2 %}{% trans "Sent" %}
+                {% else %}{% trans "Paid" %}{% endif %}</td>
+            <td class="number">{{object.total__str}}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -37,7 +37,7 @@
     <h1>{% trans "Invoices" %}</h1>
     <ul>
         <li><a href="{% url 'invoice_new' %}?from=file">{% trans "New from file" %}</a></li>
-        <li><a href="">{% trans "New from calendar" %}</a></li>
+        <li><a href="{% url 'invoice_new' %}">{% trans "New from calendar" %}</a></li>
     </ul>
 </aside>
 {% endblock %}

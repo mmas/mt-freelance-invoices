@@ -4,17 +4,30 @@ widgets.Calendar = function(element, context) {
     String.prototype.int = function() { return this | 0; };  // Bitwise. Faster than parseInt or Math.floor.
     Date.prototype.isodate = function() { return this.toJSON().split('T')[0]; };
 
-    var $calendar;
+    var widget, utils, $calendar;
 
+    widget = this;
+    utils = {  // TODO: use this instead of prototype methods.
+        mod: function(x, n) {
+            // Fix modulo. Javascript hates Maths.
+            // x: Number; n: Number.
+            return ((x % n) + n) % n;
+        },
+        int: function(x) {
+            // Bitwise. Faster than parseInt or Math.floor.
+            // x: String
+            return x | 0;
+        },
+        isodate: function(x) {
+            // Format date as 'yyyy-mm-dd'.
+            // x: Date.
+            return x.toJSON().split('T')[0];
+        }
+    };
     $calendar = $(element);
     this.$element = $calendar;
-    render();
-    $calendar.find('button.prev').bind('click', onClickCalendarPrev);
-    $calendar.find('button.next').bind('click', onClickCalendarNext);
-    $calendar.find('button.today').bind('click', onClickCalendarToday);
-    $calendar.on('click', '.day', onClickCalendarDay);
 
-    this.get = function(date_str) {
+    this.cell = function(date_str) {
         // Return td.day wich corresponds with the date passed (yyyy-mm-dd).
         var date, current_date, $cell;
         current_date = getCalendarDate();
@@ -23,7 +36,36 @@ widgets.Calendar = function(element, context) {
             $cell = $calendar.find('td[data-month=' + current_date[1] + '][data-day=' + date[2].int() + ']');
             if ($cell.length) return $cell;
         }
+    };
+
+    this.date = function($cell) {
+        // Return date (Date object) the $cell (td.day) or the currently selected if not $cell is passed.
+        var date;
+        if ($cell === undefined) {
+            date = $calendar.attr('data-value');
+            date = (date) ? new Date(date) : null;
+            return date;
+        }
+        else {
+            $cell = $($cell);
+            return new Date(
+                $calendar.attr('data-year').int(),
+                $cell.attr('data-month').int(),
+                $cell.attr('data-day').int(),
+                12
+            );
+        }
+    };
+
+    this.refresh = function() {
+        renderDays(widget.date() || new Date(), false);
     }
+
+    render();
+    $calendar.find('button.prev').bind('click', onClickCalendarPrev);
+    $calendar.find('button.next').bind('click', onClickCalendarNext);
+    $calendar.find('button.today').bind('click', onClickCalendarToday);
+    $calendar.on('click', '.day', onClickCalendarDay);
 
     function onClickCalendarPrev(e) {
         var date;
@@ -99,9 +141,7 @@ widgets.Calendar = function(element, context) {
 
     function render() {
         var $table, $header, $thead, $tbody, $row, date, i;
-        date = $calendar.attr('data-value');
-        if (date) date = new Date(date);
-        else date = new Date();
+        date = widget.date() || new Date();
         setCalendarDate(date.getFullYear(), date.getMonth(), date.getDate());
         $header = $('<header />').appendTo($calendar);
         $header.append($('<span class="month" />').text(context.months[date.getMonth()]));
@@ -117,9 +157,11 @@ widgets.Calendar = function(element, context) {
         renderDays(date);
     }
 
-    function renderDays(date) {
+    function renderDays(date, trigger) {
         var $tbody, $row, $cell, $span, day, month, year, this_month, next_month, i, a_day, first_day_month,
             days_in_this_month, last_day_prev_month, week_day, remaining_days, date_selected;
+
+        trigger = (trigger === undefined) ? true : trigger;  // Default=true.
 
         $tbody = $calendar.find('tbody');
         date_selected = $calendar.attr('data-value');
@@ -168,7 +210,6 @@ widgets.Calendar = function(element, context) {
 
         // $calendar = $('#' + element.id);
         // this.$element = $calendar;
-
-        $calendar.trigger('widgets.calendar:render', [date]);
+        if (trigger) $calendar.trigger('widgets.calendar:render', [date]);
     }
 };

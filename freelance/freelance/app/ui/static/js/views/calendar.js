@@ -1,124 +1,151 @@
 views.Calendar = function(calendar) {
 
-    var dates, selected_date;
+    var view, model;
+
+    view = this;
+    model = {
+        data: [],
+        selected: []
+    }
+    model.diff = function() {
+        // Filter out selected data based on 'date' key.
+        var data, i, xi, j, xj;
+        data = [];
+        for (i=0; xi=model.selected[i]; i++) {
+            for (j=0; xj=model.data[j]; j++) {
+                if (xi.date != xj.date) {
+                    data.push(xj);
+                }
+            }
+        }
+        model.data = data;
+    };
 
     $.ajaxSetup({
         beforeSend: function(xhr, settings) {
             if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
                 xhr.setRequestHeader('X-CSRFToken', $.cookie('csrftoken'));
             }
-        }
+        },
+        url: '/api/days'
     });
-
-    dates = {};
 
     $.ajax({
         type: 'GET',
-        url: '/api/days'
     })
     .done(function(data) {
-        dates = data;
-        renderSelectedDays();
+        model.data = data;
+        render();
     });
 
     calendar.$element.bind('widgets.calendar:change', function(e, $calendar, date) {
-        if (date) selected_date = date;
+        if (date) model.selected = [{date: utils.isodate(date)}];
     });
 
     calendar.$element.bind('widgets.calendar:render', function(e, date) {
-        selected_date = date;
-        renderSelectedDays();
+        console.log('widget redered');
+        model.selected = [{date: utils.isodate(date)}];
+        render();
     });
 
     this.selectDay = function() {
         var $cell;
-        if (selected_date) {
-            $cell = calendar.get(selected_date.isodate());
+        if (model.selected.length) {
+            $cell = calendar.cell(model.selected[0].date);
             if ($cell.attr('data-selected')) {  // TODO: get this info from data.
-                deleteDay();
+                delete_();
             }
             else {
-                saveDay();
+                update();
             }
         }
     };
 
     this.selectHalfDay = function() {
-        if (selected_date) saveDay(true);
+        if (model.selected.length) {
+            model.selected = [{date: model.selected[0].date, half: true}];
+            update();
+        }
     };
 
     this.selectWorkweek = function() {
-        // REDO
-        // if (selected_date) {
-        //     getWorkWeek().each(function() {
-        //         this.removeAttribute('data-half');
-        //         $(this).attr('data-selected', true);
-        //     });
-        // }
+        var selected = [];
+        if (model.selected.length) {
+            getWorkWeekCells(model.selected[0].date).each(function() {
+                selected.push({date: utils.isodate(calendar.date(this))});
+            });
+            model.selected = selected;
+            update();
+        }
     };
 
     this.selectWeek = function() {
-        // REDO
-        // if (selected_date) {
-        //     getWeek().each(function() {
-        //         this.removeAttribute('data-half');
-        //         $(this).attr('data-selected', true);
-        //     });
-        // }
+        var selected = [];
+        if (model.selected.length) {
+            getWeekCells(model.selected[0].date).each(function() {
+                selected.push({date: utils.isodate(calendar.date(this))});
+            });
+            model.selected = selected;
+            update();
+        }
     };
 
-    function getWeek() {
-        return calendar.get(selected_date.isodate()).parent().children();
+    function getWeekCells(date) {
+        return calendar.cell(date).parent().children();
     }
 
-    function getWorkWeek() {
-        return getWeek.slice(0, 5);
+    function getWorkWeekCells(date) {
+        return getWeekCells(date).slice(0, 5);
     }
 
-    function saveDay(half) {
-        half = half || false;
+    function update() {
         $.ajax({
-            url: '/api/day',
             type: 'POST',
-            data: JSON.stringify({date: selected_date.isodate(), half: half})
+            data: JSON.stringify(model.selected)
         })
-        .done(function(data) {
-            var $cell;
-            if (!data.saved) {
-                $cell = calendar.get(data.date);
-                if (data.half) {
-                    $cell.attr('data-half', true);
-                    $cell[0].removeAttribute('data-selected');
-                }
-                else {
-                    $cell.attr('data-selected', true);
-                    $cell[0].removeAttribute('data-half');
+        .done(function(resp) {
+            var i, xi, $cell;
+            for (i=0; xi=resp[i]; i++) {
+                if (!xi.invoice) {
+                    $cell = calendar.cell(xi.date);
+                    if (xi.half) {
+                        $cell.attr('data-half', true);
+                        $cell[0].removeAttribute('data-selected');
+                    }
+                    else {
+                        $cell.attr('data-selected', true);
+                        $cell[0].removeAttribute('data-half');
+                    }
                 }
             }
         })
     }
 
-    function deleteDay() {
+    function delete_() {
         $.ajax({
-            url: '/api/day',
             type: 'DELETE',
-            data: JSON.stringify({date: selected_date.isodate()})
+            data: JSON.stringify(model.selected)
         })
-        .done(function(data) {
-            var $cell;
-            $cell = calendar.get(selected_date.isodate());
-            $cell[0].removeAttribute('data-selected');
-            $cell[0].removeAttribute('data-half');
+        .done(function() {
+            var i, xi, $cell;
+            for (i=0; xi=model.selected[i]; i++) {
+                $cell = calendar.cell(xi.date);
+                if ($cell) {
+                    $cell[0].removeAttribute('data-saved');
+                    $cell[0].removeAttribute('data-half');
+                    $cell[0].removeAttribute('data-selected');
+                }
+            }
+            model.diff();
         });
     }
 
-    function renderSelectedDays() {
-        var $cell, i, xi;
-        for (i=0; xi=dates[i]; i++) {
-            $cell = calendar.get(xi.date);
-            console.log(xi);
+    function render() {
+        var i, xi, $cell;
+        for (i=0; xi=model.data[i]; i++) {
+            $cell = calendar.cell(xi.date);
             if ($cell) {
-                if (xi.saved) $cell.attr('data-saved', true);
+                if (xi.invoice) $cell.attr('data-saved', true);
                 else if (xi.half) $cell.attr('data-half', true);
                 else $cell.attr('data-selected', true);
             }

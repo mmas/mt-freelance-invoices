@@ -4,3 +4,4 @@ psycopg2==2.5.4
 python-dateutil==2.2
 six==1.8.0
 wsgiref==0.1.2
+git+https://github.com/chrisglass/xhtml2pdf

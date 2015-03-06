@@ -1,8 +1,9 @@
 views.Invoice = function(data) {
 
+    console.log(data);
+
     var view, template;
 
-    console.log(data);
     view = this;
 
     $.ajaxSetup({
@@ -20,77 +21,87 @@ views.Invoice = function(data) {
     });
 
     document.addEventListener('DOMContentLoaded', function() {
+        var $file;
+
         view.element = document.getElementById('sheet');
         template = document.getElementById('template').innerHTML;
         Mustache.parse(template);
         render();
-        setPopups();
-        bind();
-        if (!data.client) view.popups.settings.open();
+        view.popups = {
+            'settings': utils.popup('settings', {'widgets.popup:accept': function() { update(); }}),
+            'info': utils.popup('info'),
+            'delete': utils.popup('delete-confirmation'),
+            'error400': utils.popup('error400-message'),
+            'error500': utils.popup('error500-message'),
+            'save': utils.popup('save-confirmation', {'widgets.popup:accept': function() { update('save'); }})
+        };
+        if (data.created_from == 0) {  // From calendar.
+            if (!data.client) {
+                view.popups.settings.open();
+            }
+        }
+        else {  // From file.
+            if (!data.pdf) {
+                $file = $('[name="pdf"]')
+                $file.click();
+                $file.bind('change', function(e) {
+                    if (e.target.files.length) update('file', e.target.files[0]);
+                });
+            }
+            else if (!data.client) {
+                view.popups.settings.open();
+            }
+        }
     });
 
-    function popup(id) {
-        return new widgets.Popup(document.getElementById(id));
+    function clean() {
+        data.company_address = data.company_address.replace(/\n/g, '<br>');
+        data.company_info = data.company_info.replace(/\n/g, '<br>');
     }
 
-    function setPopups() {
-        view.popups = {
-            'settings': popup('settings'),
-            'delete': popup('delete-confirmation'),
-            'error400': popup('error400-message'),
-            'error500': popup('error500-message')
-        };
-    }
+    function update(mode, file) {
+        var form_data;
 
-    function bind() {
-        view.popups.settings.$element.bind('widgets.popup:accept', updateSettings);
-        view.popups.delete.$element.bind('widgets.popup:accept', deleteInvoice);
-    }
-
-    function deleteInvoice() {
-        $.ajax({
-            type: 'DELETE'
-        })
-        .done(function() {
-            window.location.href = '/';
-        });
-    }
-
-    function updateSettings() {
-        // var $form, ajax_settings;
-
-        // $form = view.popups.settings.$element.find('form');
-
-        // if (data.created_from == 0) {  // Invoice created from days.
-        //     ajax_settings = {
-        //         data: utils.serialize($form)
-        //     };
-        // }
-        // else {  // Invoice created from file (require file).
-        //     ajax_settings = {
-        //         data: utils.serializeMultipart($form),
-        //         cache: false,
-        //         contentType: false,
-        //         processData: false
-        //     };
-        // }
-        $.ajax({
-            data: utils.serialize(view.popups.settings.$element.find('form'))
-        })
-        .done(function(resp) {
-            data = resp;
-            render();
-        });
-    }
-
-    function save() {
-        $.ajax({
-            url: '/api/invoice/' + data.id + '?save=true'
-        })
-        .done(function() {
-            // TODO: render menu template instead.
-            $('[role=menu] .inactive').removeClass('inactive');
-        });
+        if (mode == 'save') {
+            $.ajax({
+                url: '/api/invoice/' + data.id + '?save=true'
+            })
+            .done(function() {
+                // TODO: render menu template.
+                alert('saved');
+            });
+        }
+        else if (mode == 'paid') {
+            $.ajax({
+                data: JSON.stringify({date_paid: new Date().toJSON().split('T')[0]})
+            });
+            // TODO: render menu template in done().
+        }
+        else if (mode == 'file') {
+            form_data = new FormData();
+            form_data.append('pdf', file);
+            $.ajax({
+                data: form_data,
+                type: 'POST',
+                cache: false,
+                contentType: false,
+                processData: false
+            })
+            .done(function(resp) {
+                data = resp;
+                render();
+                if (!data.client) view.popups.settings.open();
+            });
+        }
+        else {
+            $.ajax({
+                data: utils.serialize(view.popups.settings.$element.find('form'))
+            })
+            .done(function(resp) {
+                data = resp;
+                render();
+            });
+        }
     }
 
     function error400(data) {
@@ -104,14 +115,21 @@ views.Invoice = function(data) {
         view.popups.error500.open();
     }
 
-    function render() {  // TODO: redefine url if data has id without refreshing.
+    function render() {
         var content;
-        if (data.pdf) content = '<img src="/media/cats.png">';  // TEMP
-        if (data.created_from == 0) content = Mustache.render(template, data);
-        else content = '';
+        clean(data);
+        if (data.created_from == 0) {
+            content = Mustache.render(template, data);
+        }
+        else if (data.pdf) {
+            content = '<object type="application/pdf" data="' + data.pdf + '"></object>';
+        }
+        else {
+            content = '';
+        }
         view.element.innerHTML = content;
     }
 
-    this.save = save;
+    this.update = update;
 
 };

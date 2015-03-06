@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
-{% load staticfiles i18n %}
+{% load i18n %}
 
 {% block sidebar %}{% include "sidebar.html" with section='clients' %}{% endblock %}
 
 {% block main %}
-<form id="form" method="POST" enctype="multipart/form-data" autocomplete="off" spellcheck="false">
+<script type="text/javascript">
+    view = new views.Client();
+</script>
+<form id="form" method="POST" autocomplete="off" spellcheck="false">
     {% csrf_token %}
     <table class="transposed form">
         {% for field in form %}
@@ -17,11 +20,29 @@
 
 {% block menu %}
 <aside role="menu">
-    <h1>{% trans "Edit client" %}</h1>
+    <h1>{% if object %}{% trans "Edit client" %}{% else %}{% trans "New client" %}{% endif %}</h1>
     <ul>
         <li><span onclick="document.getElementById('form').submit();">{% trans "Save" %}</span></li>
-        <li><span>{% trans "Delete" %}</span></li>
-        <li><span>{% trans "Cancel" %}</span></li>
+        {% if object %}
+        <li><span onclick="view.popups.delete.open();">{% trans "Delete" %}</span></li>
+        <li><a href="{% url 'client_new' %}">{% trans "New" %}</a></li>
+        <li><a href="{% url 'clients' %}">{% trans "List" %}</a></li>
+        {% endif %}
     </ul>
 </aside>
+{% endblock %}
+
+
+{% block popups %}
+{% if object %}
+<div id="delete-confirmation">
+    <div class="content">
+        {% trans "Are you sure you want to delete this client?" %}
+    </div>
+    <footer>
+        <button type="button" data-close>{% trans "No" %}</button>
+        <a href="{% url 'client' object.pk %}?delete=1">{% trans "Yes" %}</a>
+    </footer>
+</div>
+{% endif %}
 {% endblock %}

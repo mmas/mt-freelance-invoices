@@ -1,14 +1,22 @@
+# -*- coding: utf-8 -*-
+
 import re
 from datetime import datetime
+from cStringIO import StringIO
 
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
+from django.template import loader, Context
+
+from xhtml2pdf.pisa import CreatePDF
+
+from freelance.app.utils import serialize_invoice
 
 
 def get_filename(instance, filename):
-    return 'invoices/%s.%s' % (re.sub(r'\s+', '_', instance.number),
-                               filename.split('.')[-1])
+    return 'invoices/%s.pdf' % (re.sub(r'\s+', '_', instance.number))
 
 
 class Client(models.Model):
@@ -27,8 +35,8 @@ class Client(models.Model):
 
 
 class Invoice(models.Model):
-    created = models.DateTimeField(auto_now=True)
-    updated = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     number = models.CharField(max_length=100, unique=True)
     date = models.DateTimeField(default=timezone.now())
     date_paid = models.DateTimeField(blank=True, null=True)
@@ -36,7 +44,7 @@ class Invoice(models.Model):
     subtotal = models.FloatField(default=0)
     tax = models.FloatField(default=0)
     total = models.FloatField(default=0)
-    pdf = models.FileField(upload_to=get_filename)
+    pdf = models.FileField(upload_to=get_filename, blank=True)
     daily_rate = models.FloatField(null=True)
     status = models.IntegerField(default=0)  # (0:draft|1:saved|2:sent|3:paid).
     created_from = models.IntegerField(default=0)  # (0:days|1:file).
@@ -46,12 +54,6 @@ class Invoice(models.Model):
 
     def __unicode__(self):
         return self.number
-
-    def _format_money(self, x, html=True):
-        return '%s%.2f' % ('&pound;', x)  # TODO: store currency html
-
-    def _format_date(self, x):
-        return datetime.strftime(x, '%d/%m/%Y')  # TODO: store date format
 
     def _get_new_number(self):
         """Autoincreased number formatted as 'year+month+x' with max(x)=99."""
@@ -63,6 +65,21 @@ class Invoice(models.Model):
             except Invoice.DoesNotExist:
                 break
         return number
+
+    def _create_pdf_from_days(self, usettings):
+        tmp = StringIO()
+        html = loader.get_template('invoice-pdf.html')
+        ctx = Context(serialize_invoice(self, usettings, as_json=False))
+        pdf = CreatePDF(html.render(ctx), tmp)
+
+        if pdf.err:
+            raise Exception('Error creating PDF file.')
+
+        fname = get_filename(self, '').split('/')[-1]
+        tmp.seek(0)
+        self.pdf.save(fname,
+                      SimpleUploadedFile(fname, tmp.read(), 'application/pdf'),
+                      save=False)
 
     @property
     def saved(self):
@@ -93,9 +110,9 @@ class Invoice(models.Model):
         if self.created_from_days:
             return sum(self.days_worked_dict.values())
 
-    @property
-    def days_worked_by_week(self, last_weekday=0):
+    def days_worked_by_week(self, usettings):
         # last_weekday=(0:sunday|1:monday|...)
+        last_weekday = 0  # TODO: put in user settings.
         data = []
         for day in self.days_worked.all():
             y, w, _ = day.date.isocalendar()
@@ -109,40 +126,24 @@ class Invoice(models.Model):
                     'week': w,
                     'days_worked': day.day_worked,
                     'week_ending': week_ending,
-                    'week_ending_formatted': self._format_date(week_ending),
+                    'week_ending__str': usettings.format_date(week_ending),
                     'total': self.daily_rate * day.day_worked}
                 data.append(week)
             else:
                 week['days_worked'] += day.day_worked
                 week['total'] += self.daily_rate * day.day_worked
-            week['total_html'] = self._format_money(week['total'])
+            week['total__str'] = usettings.format_money(week['total'])
         return data
-
-    @property
-    def date_formatted(self):
-        return self._format_date(self.date)
 
     @property
     def tax_total(self):
         return self.subtotal * self.tax
 
-    @property
-    def subtotal_html(self):
-        return self._format_money(self.subtotal)
+    def save_pdf(self, pdf):
+        fname = get_filename(self, '').split('/')[-1]
+        self.pdf.save(fname, pdf, True)
 
-    @property
-    def tax_total_html(self):
-        return self._format_money(self.tax_total)
-
-    @property
-    def total_html(self):
-        return self._format_money(self.total)
-
-    @property
-    def daily_rate_html(self):
-        return self._format_money(self.daily_rate)
-
-    def save(self, **kwargs):
+    def save(self, usettings=None, **kwargs):
         if not self.number:
             self.number = self._get_new_number()
         if self.created_from_days:
@@ -150,23 +151,26 @@ class Invoice(models.Model):
         self.total = self.subtotal * (1 + self.tax)
         if self.paid and not self.date_paid:
             self.date_paid = timezone.now()
+        elif self.date_paid and not self.paid:
+            self.status = 3
+        if not self.pdf and self.created_from_days and self.saved:
+            self._create_pdf_from_days(usettings)
         return super(Invoice, self).save(**kwargs)
 
-
-class DayManager(models.Manager):
-
-    def get_active_days(self):
-        return self.get_queryset().all()  # TEMP
-        # return self.get_queryset().exclude(status=3)
+    def delete(self):
+        """Delete the days worked if the invoice is a draft."""
+        if not self.saved and self.days_worked.count():
+            for day in self.days_worked.all():
+                day.invoice = None
+                day.save()
+        # TODO: delete file.
+        return super(Invoice, self).delete()
 
 
 class Day(models.Model):
     date = models.DateField(unique=True)
     invoice = models.ForeignKey(Invoice, related_name='days_worked', null=True)
     half = models.BooleanField(default=False)
-    saved = models.BooleanField(default=False)
-
-    objects = DayManager()
 
     class Meta:
         ordering = ('date',)
@@ -176,15 +180,7 @@ class Day(models.Model):
 
     @property
     def day_worked(self):
-        if self.half:
-            return .5
-        else:
-            return 1
-
-    def save(self, **kwargs):
-        if self.invoice:
-            self.saved = True
-        return super(Day, self).save(**kwargs)
+        return .5 if self.half else 1
 
 
 class Settings(models.Model):
@@ -197,6 +193,13 @@ class Settings(models.Model):
     company_account = models.CharField(max_length=50, blank=True)
     default_daily_rate = models.FloatField(default=0.)
     default_tax = models.FloatField(default=.2)  # [0,1].
+    date_format = models.CharField(max_length=50, default='%d/%m/%Y')
+
+    def format_money(self, x):
+        return '%s%.2f' % ('£', x)  # TODO: store currency html
+
+    def format_date(self, x):
+        return datetime.strftime(x, self.date_format)
 
 
 class UserManager(BaseUserManager):

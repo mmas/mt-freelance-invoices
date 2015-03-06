@@ -1,0 +1,74 @@
+{% load i18n %}
+
+<html>
+    <head>
+        <style>
+            @page {
+                size: a4 portrait;
+                @frame content_frame {
+                    -pdf-frame-border: 1;
+                    left: 2cm;
+                    top: 2cm;
+                    width: 17cm;
+                    height: 25.7cm;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="company-address">
+            <span class="company-name">{{company_name}}</span><br>
+            {{company_address_html|safe}}
+        </div>
+        <div class="company-info">
+            {{company_info_html|safe}}
+        </div>
+        <div class="invoice-info">
+            <strong class="invoice-label">{% trans "Invoice" %}</strong><br>
+            Invoice number: {{number}}<br>
+            Date: {{date_formatted}}<br>
+        </div>
+        <div class="client-info">
+            <strong>{{client.name}}</strong>
+            {{client_html|safe}}
+        </div>
+        <div class="company-payment">
+            Please make payment payable to: <span class="company-name">{{company_name}}</span><br>
+            Bank account: {{company_account}}
+        </div>
+        <table class="description">
+            <thead>
+                <tr>
+                    <th>{% trans "Week ending" %}</th>
+                    <th>{% trans "Days worked" %}</th>
+                    <th>{% trans "Daily rate" %}</th>
+                    <th>{% trans "Total" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in days_worked_by_week %}
+                <tr>
+                    <td>{{day.week_ending__str}}</td>
+                    <td>{{day.days_worked}}</td>
+                    <td>{{day.daily_rate_html|safe}}</td>
+                    <td>{{day.total__str|safe}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="total">
+            <tr>
+                <th>{% trans "Subtotal" %}</th>
+                <td>{{subtotal__str|safe}}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Total VAT" %} ({{tax_str}})</th>
+                <td>{{tax_total__str|safe}}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Total due" %}</th>
+                <td>{{total__str|safe}}</td>
+            </tr>
+        </table>
+    </body>
+</html>

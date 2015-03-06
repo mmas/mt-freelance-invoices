@@ -24,3 +24,12 @@
     </tbody>
 </table>
 {% endblock %}
+
+{% block menu %}
+<aside role="menu">
+    <h1>{% trans "Clients" %}</h1>
+    <ul>
+        <li><a href="{% url 'client_new' %}">{% trans "New" %}</a></li>
+    </ul>
+</aside>
+{% endblock %}

@@ -6,15 +6,14 @@ from django.contrib.auth import authenticate, login, logout
 # from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
-from django.forms.models import model_to_dict
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views import generic
 
 from dateutil import parser
 
 from freelance.app.models import Invoice, Client, Day, Settings
-from freelance.app.utils import serialize
+from freelance.app import utils
 
 
 class LoginRequiredMixin(object):
@@ -38,9 +37,9 @@ class JsonMixin(object):
                 content_type='application/json',
                 status=400)
 
-    def _json_response(self, data=None, status=200, fields=[]):
-        if data is not None:
-            data = serialize(data, fields)
+    def _respond(self, data=None, status=200, fields=[]):
+        if data is not None and not isinstance(data, str):
+            data = utils.serialize(data, fields)
         return HttpResponse(data,
                             status=status,
                             content_type='application/json')
@@ -74,78 +73,84 @@ class ClientView(LoginRequiredMixin, generic.UpdateView):
     model = Client
     template_name = 'client.html'
 
+    def get(self, request, *args, **kwargs):
+        if 'delete' in request.GET:
+            return self.delete(request, *args, **kwargs)
+        return super(ClientView, self).get(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        self.get_object().delete()
+        return HttpResponseRedirect(reverse('clients'))
+
+    def get_object(self):
+        if 'pk' in self.kwargs:
+            return super(ClientView, self).get_object()
+
+    def get_success_url(self):
+        return reverse('client', args=[self.object.pk])
+
 
 class CalendarView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'calendar.html'
 
 
-class JsonDayMixin(JsonMixin):
-    FIELDS = ['date', 'half', 'saved']
-
-    def _json_response(self, data=None, status=200, fields=[]):
-        return super(JsonDayMixin, self)._json_response(
-            data, status, self.FIELDS)
-
-
-class DayListJsonView(LoginRequiredMixin, JsonDayMixin, generic.View):
+class DayListJsonView(LoginRequiredMixin, JsonMixin, generic.View):
 
     def get(self, request, *args, **kwargs):
-        return self._json_response(Day.objects.get_active_days())
-
-
-class DayJsonView(LoginRequiredMixin, JsonDayMixin, generic.View):
+        return self._respond(Day.objects.all(),
+                             fields=['date', 'half', 'invoice'])
 
     def post(self, request, *args, **kwargs):
-        data = json.loads(request.body)
-        day, _ = Day.objects.get_or_create(date=data['date'])
-        if not day.saved:
-            day.half = data['half']
-            day.save()
-        return self._json_response(day)
+        day_list = []
+        for day in json.loads(request.body):
+            obj, _ = Day.objects.get_or_create(date=day['date'])
+            if not obj.invoice:
+                obj.half = day.get('half', False)
+                obj.save()
+                day_list.append(day)
+        return self._respond(day_list)
 
-
-class InvoiceMixin(object):
-
-    def _extend_invoice(self, invoice):
-        invoice_dict = model_to_dict(invoice)
-        company_name = self.request.user.settings.company_name
-        company_address = self.request.user.settings.company_address
-        company_info = self.request.user.settings.company_info
-        company_account = self.request.user.settings.company_account
-        invoice_dict.update({
-            'company_name': company_name,
-            'company_name_html': company_name.replace('\n', '<br>'),
-            'company_address': company_address,
-            'company_address_html': company_address.replace('\n', '<br>'),
-            'company_info': company_info,
-            'company_info_html': company_info.replace('\n', '<br>'),
-            'company_account': company_account,
-            'days_worked_by_week': invoice.days_worked_by_week,
-            'date_formatted': invoice.date_formatted,
-            'daily_rate_html': invoice.daily_rate_html,
-            'tax_total': invoice.tax_total,
-            'subtotal_html': invoice.subtotal_html,
-            'tax_total_html': invoice.tax_total_html,
-            'total_html': invoice.total_html})
-        tax_percent = invoice.tax * 100
-        if tax_percent.is_integer():
-            tax_str_format = '%d%%'
-        else:
-            tax_str_format = '%.2f%%'
-        if invoice.client:
-            invoice_dict['client'] = invoice.client
-            invoice_dict['client_html'] = invoice.client.to_html()
-        invoice_dict['tax_str'] = tax_str_format % tax_percent
-        return invoice_dict
+    def delete(self, request, *args, **kwargs):
+        for day in json.loads(request.body):
+            try:
+                obj = Day.objects.get(date=day['date'], invoice=None)
+            except Day.DoesNotExist:
+                continue
+            else:
+                obj.delete()
+        return self._respond(status=204)
 
 
 class InvoiceListView(LoginRequiredMixin, generic.ListView):
     model = Invoice
     template_name = 'invoice_list.html'
 
+    def get_context_data(self, **kwargs):
+        ctx = super(InvoiceListView, self).get_context_data(**kwargs)
+        object_list = []
+        for invoice in ctx['object_list']:
+            invoice = utils.serialize_invoice(
+                invoice, self.request.user.settings, as_json=False)
+            object_list.append(invoice)
+        ctx['object_list'] = object_list
+        return ctx
 
-class InvoiceView(LoginRequiredMixin, InvoiceMixin, generic.DetailView):
-    template_name = 'invoice-template.html'
+
+class InvoiceView(LoginRequiredMixin, generic.DetailView):
+    template_name = 'invoice.html'
+
+    def get(self, request, *args, **kwargs):
+        if 'delete' in request.GET:
+            return self.delete(request, *args, **kwargs)
+        resp = super(InvoiceView, self).get(request, *args, **kwargs)
+        if 'number' not in self.kwargs:
+            return HttpResponseRedirect(
+                reverse('invoice', args=[self.object.number]))
+        return resp
+
+    def delete(self, request, *args, **kwargs):
+        self.get_object().delete()
+        return HttpResponseRedirect(reverse('invoices'))
 
     def get_object(self):
         """
@@ -162,7 +167,7 @@ class InvoiceView(LoginRequiredMixin, InvoiceMixin, generic.DetailView):
         if self.request.GET.get('from', None) == 'file':
             return self._get_new_object()
 
-        days = Day.objects.get_active_days()
+        days = Day.objects.filter(invoice=None)
         if days:
             return self._get_object_from_days(days)
 
@@ -170,7 +175,8 @@ class InvoiceView(LoginRequiredMixin, InvoiceMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InvoiceView, self).get_context_data(**kwargs)
-        ctx['object_json'] = serialize(self._extend_invoice(self.object))
+        ctx['object_json'] = utils.serialize_invoice(
+            self.object, self.request.user.settings)
         ctx['clients'] = Client.objects.all()
         return ctx
 
@@ -195,16 +201,26 @@ class InvoiceView(LoginRequiredMixin, InvoiceMixin, generic.DetailView):
             created_from=1)
 
 
-class InvoiceJsonView(
-        JsonMixin, LoginRequiredMixin, InvoiceMixin, generic.View):
+class InvoiceJsonView(JsonMixin, LoginRequiredMixin, generic.View):
+
+    def post(self, request, *args, **kwargs):
+        """Method used just for upload a pdf file by request.FILES"""
+        invoice = self.get_object()
+        pdf = request.FILES.get('pdf', None)
+        if pdf:
+            invoice.save_pdf(pdf)
+            return self._respond(
+                utils.serialize_invoice(invoice, request.user.settings))
+        else:
+            return self._respond(status=400)
 
     def put(self, request, *args, **kwargs):
         invoice = self.get_object()
         if 'save' in request.GET:
             invoice.status = 1
             invoice.full_clean()  # Validate blank fields, not the best way.
-            invoice.save()
-            return self._json_response(status=201)
+            invoice.save(usettings=request.user.settings)
+            return self._respond(status=204)
         else:
             for k, v in json.loads(request.body).items():
                 if k == 'client':
@@ -214,12 +230,13 @@ class InvoiceJsonView(
                     v = parser.parse(v)
                 setattr(invoice, k, v)
             invoice.save()
-            return self._json_response(self._extend_invoice(invoice))
+            return self._respond(
+                utils.serialize_invoice(invoice, request.user.settings))
 
     def delete(self, request, *args, **kwargs):
         invoice = self.get_object()
         invoice.delete()
-        return self._json_response(status=201)
+        return self._respond(status=204)
 
     def get_object(self):
         return Invoice.objects.get(pk=self.kwargs['pk'])

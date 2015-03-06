@@ -34,15 +34,15 @@ urlpatterns = patterns('',
         views.InvoiceJsonView.as_view(),
         name='api_invoice'),
 
-    url(r'^clients$',
-        views.ClientListView.as_view(),
-        name='clients'),
-
-    url(r'^clients/new$',
+    url(r'^client$',
         views.ClientView.as_view(),
         name='client_new'),
 
-    url(r'^clients/(?P<pk>\d+)$',
+    url(r'^client/list$',
+        views.ClientListView.as_view(),
+        name='clients'),
+
+    url(r'^client/(?P<pk>\d+)$',
         views.ClientView.as_view(),
         name='client'),
 
@@ -53,10 +53,6 @@ urlpatterns = patterns('',
     url(r'^settings$',
         views.SettingsView.as_view(),
         name='settings'),
-
-    url(r'^api/day$',
-        views.DayJsonView.as_view(),
-        name='api_day'),
 
     url(r'^api/days$',
         views.DayListJsonView.as_view(),
