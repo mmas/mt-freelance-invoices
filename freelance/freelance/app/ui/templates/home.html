@@ -1,8 +1,31 @@
 {% extends "base.html" %}
 
+{% load i18n %}
+
 {% block sidebar %}{% include "sidebar.html" with section='home' %}{% endblock %}
 
 {% block main %}
-home
+
+<section id="last-activity">
+    <h1>{% trans "Last 90 days activity" %}</h1>
+
+    <h2>{% trans "Edited invoices" %}</h2>
+    {% include "partials/invoice_list.html" with object_list=last_edited_invoices %}
+
+    <h2>{% trans "Draft invoices" %}</h2>
+    <h3>{% trans "Days and settings editable" %}</h3>
+    {% include "partials/invoice_list.html" with object_list=draft_invoices %}
+
+    <h2>{% trans "Saved invoices" %}</h2>
+    <h3>{% trans "Pending to send to the client" %}</h3>
+    {% include "partials/invoice_list.html" with object_list=saved_invoices %}
+
+    <h2>{% trans "Money status" %}</h2>
+    <label>{% trans "Paid invoices" %}</label><br><span>{{money_status.paid}}</span><br>
+    <label>{% trans "Unpaid invoices" %}</label><br><span>{{money_status.unpaid}}</span><br>
+    <label>{% trans "Unsent invoices" %}</label><br><span>{{money_status.unsent}}</span><br>
+
+</section>
+
 {% endblock %}
 

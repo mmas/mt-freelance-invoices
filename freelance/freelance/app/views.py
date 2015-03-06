@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
 # from django.core.exceptions import ImproperlyConfigured
@@ -8,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
+from django.utils import timezone
 from django.views import generic
 
 from dateutil import parser
@@ -48,20 +50,33 @@ class JsonMixin(object):
         return [{'field': k, 'errors': v} for k, v in error_dict.items()]
 
 
-# def get_template_names(self):
-#     if self.request.is_ajax():
-#         template_name = self.ajax_template_name or self.template_name
-#     else:
-#         template_name = self.template_name
-
-#     if template_name is None:
-#         raise ImproperlyConfigured('template_name missed')
-
-#     return [template_name]
-
-
 class HomeView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'home.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(HomeView, self).get_context_data(**kwargs)
+        invoices = Invoice.objects.all()
+
+        ctx['last_edited_invoices'] = []
+        t0 = timezone.now() - timedelta(days=90)
+        for invoice in invoices.filter(updated__gte=t0):
+            invoice = utils.serialize_invoice(
+                invoice, self.request.user.settings, False)
+            ctx['last_edited_invoices'].append(invoice)
+
+        ctx['draft_invoices'] = invoices.filter(status=0)
+        ctx['saved_invoices'] = invoices.filter(status=1)
+
+        def money_status(query):
+            x = sum(i.total for i in invoices.filter(**query))
+            return self.request.user.settings.format_money(x)
+
+        ctx['money_status'] = {
+            'paid': money_status({'status': 3}),
+            'unpaid': money_status({'status': 2}),
+            'unsent': money_status({'status__lt': 2})
+        }
+        return ctx
 
 
 class ClientListView(LoginRequiredMixin, generic.ListView):

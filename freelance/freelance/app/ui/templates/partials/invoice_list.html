@@ -1,0 +1,27 @@
+{% load i18n %}
+
+<table class="full">
+    <thead>
+        <tr>
+            <th>{% trans "Number" %}</th>
+            <th>{% trans "Date" %}</th>
+            <th>{% trans "Client" %}</th>
+            <th>{% trans "Status" %}</th>
+            <th class="number">{% trans "Total" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list  %}
+        <tr>
+            <td><a href="{% url 'invoice' object.number %}">{{object.number}}</a></td>
+            <td>{% if object.date %}{{object.date__str}}{% endif %}</td>
+            <td>{{object.client.name}}</td>
+            <td>{% if object.status == 0 %}{% trans "Draft" %}
+                {% elif object.status == 1 %}{% trans "Saved" %}
+                {% elif object.status == 2 %}{% trans "Sent" %}
+                {% else %}{% trans "Paid" %}{% endif %}</td>
+            <td class="number">{{object.total__str}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
