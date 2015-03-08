@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os
 import re
 from datetime import datetime
 from cStringIO import StringIO
 
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -17,6 +19,17 @@ from freelance.app.utils import serialize_invoice
 
 def get_filename(instance, filename):
     return 'invoices/%s.pdf' % (re.sub(r'\s+', '_', instance.number))
+
+
+class Currency(models.Model):
+    name = models.CharField(max_length=70)
+    code = models.CharField(max_length=3)
+
+    class Meta:
+        ordering = ('code',)
+
+    def __unicode__(self):
+        return '%s %s' % (self.code, self.name)
 
 
 class Client(models.Model):
@@ -69,8 +82,9 @@ class Invoice(models.Model):
     def _create_pdf_from_days(self, usettings):
         tmp = StringIO()
         html = loader.get_template('invoice-pdf.html')
-        ctx = Context(serialize_invoice(self, usettings, as_json=False))
-        pdf = CreatePDF(html.render(ctx), tmp)
+        ctx = serialize_invoice(self, usettings, as_json=False)
+        ctx['static_root'] = settings.STATICFILES_DIRS[0]
+        pdf = CreatePDF(html.render(Context(ctx)), tmp)
 
         if pdf.err:
             raise Exception('Error creating PDF file.')
@@ -163,7 +177,8 @@ class Invoice(models.Model):
             for day in self.days_worked.all():
                 day.invoice = None
                 day.save()
-        # TODO: delete file.
+        if self.pdf:
+            os.remove(self.pdf.path)
         return super(Invoice, self).delete()
 
 
@@ -185,8 +200,8 @@ class Day(models.Model):
 
 class Settings(models.Model):
     email_address = models.CharField(max_length=100, blank=True)
-    email_password = models.CharField(max_length=100, blank=True)
-    email_smtp = models.CharField(max_length=100, blank=True)
+    email_smtp = models.CharField(max_length=100, default='smtp.gmail.com')
+    email_smtp_port = models.IntegerField(default=587)
     company_name = models.CharField(max_length=100, blank=True)
     company_address = models.TextField(blank=True)
     company_info = models.TextField(blank=True)
@@ -194,9 +209,14 @@ class Settings(models.Model):
     default_daily_rate = models.FloatField(default=0.)
     default_tax = models.FloatField(default=.2)  # [0,1].
     date_format = models.CharField(max_length=50, default='%d/%m/%Y')
+    currency = models.ForeignKey(Currency)
 
     def format_money(self, x):
-        return '%s%.2f' % ('£', x)  # TODO: store currency html
+        CURRENCY_MAP = {'GBP': '£',  # TODO: improve this.
+                        'USD': '$',
+                        'EUR': '€'}
+        return '%s {:,.2f}'.format(x) % CURRENCY_MAP.get(self.currency.code,
+                                                         self.currency.code)
 
     def format_date(self, x):
         return datetime.strftime(x, self.date_format)
@@ -210,7 +230,8 @@ class UserManager(BaseUserManager):
             raise ValueError('The given username must be set')
         user = self.model(username=username, last_login=now, **extra_fields)
         user.set_password(password)
-        user.settings = Settings.objects.create()
+        user.settings = Settings.objects.create(
+            currency=Currency.objects.get(code='GBP'))
         user.save(using=self._db)
         return user
 

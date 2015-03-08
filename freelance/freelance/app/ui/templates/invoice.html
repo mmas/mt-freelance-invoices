@@ -23,8 +23,8 @@
         Date: {{date__str}}<br>
     </div>
     <div class="client-info">
-        <strong>{{client.name}}</strong>
-        {{&client_html}}
+        <strong>{{client.name}}</strong><br>
+        {{&client.address}}
     </div>
     <div class="company-payment">
         Please make payment payable to: <span class="company-name">{{company_name}}</span><br>
@@ -58,7 +58,7 @@
             <td>{{subtotal__str}}</td>
         </tr>
         <tr>
-            <th>{% endverbatim %}{% trans "Total VAT" %}{% verbatim %} ({{tax_str}})</th>
+            <th>{% endverbatim %}{% trans "Total VAT" %}{% verbatim %} ({{tax__str}})</th>
             <td>{{tax_total__str}}</td>
         </tr>
         <tr>
@@ -67,6 +67,83 @@
         </tr>
     </table>
     {% endverbatim %}
+</script>
+<script id="menu-template" type="x-tmpl-mustache">
+<h1>{% trans "Invoice" %}</h1>
+{% verbatim %}
+<ul>
+    <li><span {{#saved}} class="inactive"{{/saved}}{{^saved}} onclick="view.popups.save.open();"{{/saved}}>{% endverbatim %}{% trans "Save" %}{% verbatim %}</span></li>
+    <li><span{{#saved}} onclick="view.popups.password.open();"{{/saved}}{{^saved}} class="inactive"{{/saved}}>{% endverbatim %}{% trans "Email" %}{% verbatim %}</span></li>
+    <li><a{{#saved}} href="{{pdf}}" download{{/saved}}{{^saved}} class="inactive"{{/saved}}>{% endverbatim %}{% trans "Download" %}{% verbatim %}</a></li>
+    <li><span{{#sent}} onclick="view.update('paid');"{{/sent}}{{^sent}} class="inactive"{{/sent}}>{% endverbatim %}{% trans "Set as paid" %}{% verbatim %}</span></li>
+    <li><span{{#saved}} class="inactive"{{/saved}}{{^saved}} onclick="view.popups.settings.open();"{{/saved}}>{% endverbatim %}{% trans "Settings" %}{% verbatim %}</span></li>
+    <li><span onclick="view.popups.info.open();">{% endverbatim %}{% trans "Info" %}{% verbatim %}</span></li>
+    <li><span onclick="view.popups.delete.open();">{% endverbatim %}{% trans "Delete" %}{% verbatim %}</span></li>
+    <li><a href="{% endverbatim %}{% url 'invoices' %}">{% trans "List" %}{% verbatim %}</a></li>
+</ul>
+{% endverbatim %}
+</script>
+<script id="info-template" type="x-tmpl-mustache">
+<table class="transposed">
+    <tr>
+        <th>{% trans "Invoice number" %}{% verbatim %}</th>
+        <td>{{number}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Invoice date" %}{% verbatim %}</th>
+        <td>{{date__str}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Created" %}{% verbatim %}</th>
+        <td>{{created__str}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Updated" %}{% verbatim %}</th>
+        <td>{{updated__str}}</td>
+    </tr>
+    {{#date_paid}}
+    <tr>
+        <th>{% endverbatim %}{% trans "Paid" %}{% verbatim %}</th>
+        <td>{{date_paid__str}} </td>
+    </tr>
+    {{/date_paid}}
+    <tr>
+        <th>{% endverbatim %}{% trans "Client" %}{% verbatim %}</th>
+        <td>{{client.name}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Subtotal" %}{% verbatim %}</th>
+        <td>{{subtotal__str}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Tax" %}{% verbatim %}</th>
+        <td>{{tax__str}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Total" %}{% verbatim %}</th>
+        <td>{{total__str}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Daily rate" %}{% verbatim %}</th>
+        <td>{{daily_rate__str}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Status" %}{% verbatim %}</th>
+        <td>{{#paid}}
+            {% endverbatim %}{% trans "Paid" %}{% verbatim %}
+            {{/paid}}{{^paid}}{{#sent}}
+            {% endverbatim %}{% trans "Sent" %}{% verbatim %}
+            {{/sent}}{{^sent}}{{#saved}}
+            {% endverbatim %}{% trans "Saved" %}{% verbatim %}
+            {{/saved}}{{^saved}}
+            {% endverbatim %}{% trans "Draft" %}{% verbatim %}
+            {{/saved}}{{/sent}}{{/paid}}</td>
+    </tr>
+    <tr>
+        <th>{% endverbatim %}{% trans "Created from" %}{% verbatim %}</th>
+        <td>{{#created_from}}{% endverbatim %}{% trans "File" %}{% verbatim %}{{/created_from}}{{^created_from}}{% endverbatim %}{% trans "Calendar" %}{% verbatim %}{{/created_from}}{% endverbatim %}</td>
+    </tr>
+</table>
 </script>
 <script id="error400-template" type="x-tmpl-mustache">
     {% verbatim %}
@@ -80,26 +157,14 @@
 {% endblock %}
 
 {% block menu %}
-<aside role="menu">
-    <h1>{% trans "Invoice" %}</h1>
-    <ul>
-        <li><span {% if object.saved %} class="inactive"{% else %} onclick="view.popups.save.open();"{% endif %}>{% trans "Save" %}</span></li>
-        <li><span{% if not object.saved %} class="inactive"{% endif %}>{% trans "Email" %}</span></li>
-        <li><a{% if not object.saved %} class="inactive"{% else %} href="{{object.pdf.url}}" download{% endif %}>{% trans "Download" %}</a></li>
-        <li><span{% if object.sent %} onclick="view.update('paid');"{% else %} class="inactive"{% endif %}>{% trans "Set as paid" %}</span></li>
-        <li><span{% if object.saved %} class="inactive"{% else %} onclick="view.popups.settings.open();"{% endif %}>{% trans "Settings" %}</span></li>
-        <li><span onclick="view.popups.info.open();">{% trans "Info" %}</span></li>
-        <!--<li><span>{% trans "Documents" %}</span></li>-->
-        <li><span onclick="view.popups.delete.open();">{% trans "Delete" %}</span></li>
-    </ul>
-</aside>
+<aside role="menu" id="menu"></aside>
 {% endblock %}
 
 {% block popups %}
 <div id="settings">
     <header>
         {% trans "Settings" %}
-        <button type="button" data-close>x</button>
+        <button type="button" data-close></button>
     </header>
     <div class="content">
         {% if object.created_from_days %}
@@ -165,70 +230,16 @@
 <div id="info">
     <header>
         {% trans "Info" %}
-        <button type="button" data-close>x</button>
+        <button type="button" data-close></button>
     </header>
+    <div class="content" id="info-content"></div>
+</div>
+<div id="loading" class="small">
     <div class="content">
-        <table class="transposed">
-            <tr>
-                <th>{% trans "Invoice number" %}</th>
-                <td>{{object.number}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Invoice date" %}</th>
-                <td>{{object.date|date:"d/m/Y"}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Created" %}</th>
-                <td>{{object.created|date:"d/m/Y H:i"}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Updated" %}</th>
-                <td>{{object.updated|date:"d/m/Y H:i"}}</td>
-            </tr>
-            {% if object.date_paid %}
-            <tr>
-                <th>{% trans "Paid" %}</th>
-                <td>{{object.date_paid}} </td>
-            </tr>
-            {% endif %}
-            <tr>
-                <th>{% trans "Client" %}</th>
-                <td>{{object.client}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Subtotal" %}</th>
-                <td>{{object.subtotal}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Tax" %}</th>
-                <td>{{object.tax}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Total" %}</th>
-                <td>{{object.total}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Daily rate" %}</th>
-                <td>{{object.daily_rate}}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Status" %}</th>
-                <td>{% if object.status == 0 %}{% trans "Draft" %}{% elif object.status == 1 %}{% trans "Saved" %}{% elif object.status == 2 %}{% trans "Sent" %}{% else %}{% trans "Paid" %}{% endif %}</td>
-            </tr>
-            <tr>
-                <th>{% trans "Created from" %}</th>
-                <td>{% if object.created_from == 0 %}{% trans "Calendar" %}{% else %}{% trans "File" %}{% endif %}</td>
-            </tr>
-            {% if object.created_from_days %}
-            <tr>
-                <th>{% trans "Days worked" %}</th>
-                <td>{% for k, v in object.days_worked_dict.items %}{{k}}{% if v == .5 %}({% trans "halfday" %}){% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
-            </tr>
-            {% endif %}
-        </table>
+        <img src="{% static 'img/loading.gif' %}">
     </div>
 </div>
-<div id="delete-confirmation">
+<div id="delete-confirmation" class="small">
     <div class="content">
         {% trans "Are you sure you want to delete this invoice?" %}
     </div>
@@ -237,7 +248,7 @@
         <a href="{% url 'invoice' object.number %}?delete=1">{% trans "Yes" %}</a>
     </footer>
 </div>
-<div id="save-confirmation">
+<div id="save-confirmation" class="small">
     <div class="content">
         {% trans "Once you have saved the invoice this won't be editable." %}
     </div>
@@ -246,10 +257,27 @@
         <button type="button" data-accept>{% trans "OK" %}</button>
     </footer>
 </div>
+<div id="email-password" class="small">
+    <div class="content">
+        <input type="password" placeholder="{% trans 'Type your email password' %}">
+    </div>
+    <footer>
+        <button type="button" data-close>{% trans "Cancel" %}</button>
+        <button type="button" data-accept>{% trans "OK" %}</button>
+    </footer>
+</div>
+<div id="sent-confirmation" class="small">
+    <div class="content">
+        {% trans "The invoice has been sent." %}
+    </div>
+    <footer>
+        <button type="button" data-accept>{% trans "OK" %}</button>
+    </footer>
+</div>
 <div id="error400-message">
     <header>
         {% trans "Error" %}
-        <button type="button" data-close>x</button>
+        <button type="button" data-close></button>
     </header>
     <div class="content"></div>
     <footer>
@@ -259,7 +287,7 @@
 <div id="error500-message">
     <header>
         {% trans "Error" %}
-        <button type="button" data-close>x</button>
+        <button type="button" data-close></button>
     </header>
     <div class="content">
         <p>{% trans "Internal server error" %}</p>

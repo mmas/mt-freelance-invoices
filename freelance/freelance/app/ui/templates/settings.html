@@ -20,6 +20,7 @@
     <h1>{% trans "Settings" %}</h1>
     <ul>
         <li><span onclick="document.getElementById('form').submit();">{% trans "Save" %}</span></li>
+        <li><a href="{% url 'logout' %}">{% trans "Logout" %}</a></li>
     </ul>
 </aside>
 {% endblock %}

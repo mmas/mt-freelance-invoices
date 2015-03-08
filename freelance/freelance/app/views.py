@@ -4,7 +4,6 @@ import json
 from datetime import timedelta
 
 from django.contrib.auth import authenticate, login, logout
-# from django.core.exceptions import ImproperlyConfigured
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
@@ -64,8 +63,13 @@ class HomeView(LoginRequiredMixin, generic.TemplateView):
                 invoice, self.request.user.settings, False)
             ctx['last_edited_invoices'].append(invoice)
 
-        ctx['draft_invoices'] = invoices.filter(status=0)
-        ctx['saved_invoices'] = invoices.filter(status=1)
+        def extended_invoice(invoice_queryset):
+            return [utils.serialize_invoice(
+                    i, self.request.user.settings, False)
+                    for i in invoice_queryset.all()]
+
+        ctx['draft_invoices'] = extended_invoice(invoices.filter(status=0))
+        ctx['saved_invoices'] = extended_invoice(invoices.filter(status=1))
 
         def money_status(query):
             x = sum(i.total for i in invoices.filter(**query))
@@ -211,7 +215,7 @@ class InvoiceView(LoginRequiredMixin, generic.DetailView):
         for i in days:
             i.invoice = invoice
             i.save()
-        invoice.save()  # Set subtotal from days.
+        invoice.save(usettings=self.request.user.settings)  # Set subtotal.
         return invoice
 
     def _get_new_object(self):
@@ -223,14 +227,17 @@ class InvoiceView(LoginRequiredMixin, generic.DetailView):
 
 class InvoiceJsonView(JsonMixin, LoginRequiredMixin, generic.View):
 
+    def _invoice_response(self, invoice):
+        return self._respond(
+            utils.serialize_invoice(invoice, self.request.user.settings))
+
     def post(self, request, *args, **kwargs):
         """Method used just for upload a pdf file by request.FILES"""
         invoice = self.get_object()
         pdf = request.FILES.get('pdf', None)
         if pdf:
             invoice.save_pdf(pdf)
-            return self._respond(
-                utils.serialize_invoice(invoice, request.user.settings))
+            return self._invoice_response(invoice)
         else:
             return self._respond(status=400)
 
@@ -239,19 +246,24 @@ class InvoiceJsonView(JsonMixin, LoginRequiredMixin, generic.View):
         if 'save' in request.GET:
             invoice.status = 1
             invoice.full_clean()  # Validate blank fields, not the best way.
-            invoice.save(usettings=request.user.settings)
-            return self._respond(status=204)
+        elif 'email' in request.GET:
+            password = json.loads(request.body)['password']
+            try:
+                utils.email_invoice(invoice, request.user.settings, password)
+            except:
+                return self._respond('Error sending email', stauts=500)
+            else:
+                invoice.status = 2
         else:
             for k, v in json.loads(request.body).items():
                 if k == 'client':
                     v = Client.objects.get(pk=v)
-                elif k == 'date':
+                elif k.startswith('date'):
                     # Convert before saving to keep date as a DateTime object.
                     v = parser.parse(v)
                 setattr(invoice, k, v)
-            invoice.save()
-            return self._respond(
-                utils.serialize_invoice(invoice, request.user.settings))
+        invoice.save(usettings=request.user.settings)
+        return self._invoice_response(invoice)
 
     def delete(self, request, *args, **kwargs):
         invoice = self.get_object()
@@ -282,7 +294,7 @@ class LoginView(generic.TemplateView):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('invoices')
+            return redirect('home')
         return redirect('login')
 
 

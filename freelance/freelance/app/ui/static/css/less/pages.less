@@ -1,11 +1,54 @@
+#home {
+    > [role=main] {
+        padding-left: @gap+@nav-width;
+    }
+    h1 {
+        margin: 0 0 24px;
+        font-size: 26px;
+    }
+    h2 {
+        margin: 0 0 10px;
+        font-size: 22px;
+    }
+    h3 {
+        margin: 0 0 10px;
+        font-size: 19px;
+    }
+    section {
+        margin-bottom: 55px;
+        &.money-status {
+            div {
+                display: inline-block; vertical-align: top;
+                width: 33%;
+                text-align: center;
+                label {
+                    display: block;
+                    font-size: 22px;
+                    margin-bottom: 4px;
+                }
+                span {
+                    display: block;
+                    color: @primary-color;
+                    font-weight: 400;
+                    font-size: 28px;
+                }
+            }
+        }
+    }
+}
+
 #calendar {
     header {
         height: 32px;
+        margin-bottom: 17px;
         .month,
         .year {
             margin-right: 4px;
             text-transform: uppercase;
             line-height: 32px;
+            font-size: 26px;
+            font-weight: 300;
+            color: @gray;
         }
         button {
             border: none;
@@ -27,12 +70,12 @@
         th, td {
             border-style: solid;
             border-width: 1px;
+            border-color: @gray;
             width: 100/7%;
         }
         thead {
             tr {
                 th {
-                    text-transform: capitalize;
                     text-align: center;
                 }
             }
@@ -58,7 +101,7 @@
                             background: fadeout(@primary-color, 90%);
                         }
                         .__icon();
-                        .__icon-deselected();
+                        //.__icon-deselected();
                         &:before {
                             position: absolute; bottom: 5px; left: 5px;
                             font-size: 12px;
@@ -75,7 +118,7 @@
                         }
                         &[data-saved] {
                             .__icon-selected();
-                            color: @border-color;
+                            color: @gray-darkest;
                         }
                     }
                     .day-number {
@@ -93,18 +136,17 @@
 #login-form {
     @width: 400px;
     width: @width;
-    border: solid 1px @border-color;
     display: block;
     position: fixed; left: 50%;
     margin-left: -@width/2;
-    padding: 20px;
+    padding: 60px 20px 20px;
     input, button {
         display: block;
         width: 100%; height: 46px;
     }
     input {
         margin-bottom: 20px;
-        border-width: 2px;
+        border: solid 2px @gray;
     }
     button {
         appearance: none;
@@ -120,6 +162,8 @@
     @gap: 17px;
     width: 878px; height: 1212px; padding: 84px; // From A4@12px
     border: solid 1px @border-color;
+    background-color: #FAFAFA;
+    color: #111;
     margin: 0 auto;
     position: relative;
     overflow: hidden;
@@ -154,9 +198,15 @@
     }
     table {
         th, td {
-            border: solid 1px @text-color;
+            border: solid 1px #111;
             width: 176px;
             text-align: left;
+            color: #111;
+        }
+        th {
+            text-transform: none;
+            font-size: 17px;
+            font-weight: 400;
         }
         &.description {
             margin-bottom: @gap;

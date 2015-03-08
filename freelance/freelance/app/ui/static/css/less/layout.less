@@ -1,16 +1,14 @@
 body {
-    @gap: 20px;
-    @nav-width: 52px;
-    @menu-width: 270px;
     position: relative;
     height: 100%;
-    color: @text-color;
+    color: @light-gray;
     font-family: 'Ubuntu'; font-weight: 300; font-size: 17px;
+    background-color: @gray-blue;
     > [role=nav] {
         position: fixed; top: 0; left: 0;
         width: @nav-width; height: 100%;
         z-index: 100;
-        background-color: @secondary-color;
+        background-color: @gray-darkest;
         ul {
             margin: 0; padding: 0;
             li {
@@ -19,16 +17,18 @@ body {
                 width: 100%; height: @nav-width;
                 a {
                     .__icon();
-                    color: white;
+                    color: @gray;
                     display: block;
                     width: 100%; height: 100%;
                     text-align: center;
                     font-size: 23px;
                     padding-top: 11px;
                     &:hover {
+                        color: white;
                         background-color: lighten(@secondary-color, 5%);
                     }
                     &.active {
+                        color: white;
                         background-color: @primary-color;
                     }
                     &.home {
@@ -51,16 +51,15 @@ body {
         }
     }
     > [role=main] {
-        padding: @gap @gap+@menu-width @gap @gap+@nav-width;
+        padding: 10px @gap @gap @gap+@nav-width+@menu-width;
     }
     > [role=menu] {
-        position: fixed; top: 0; right: 0;
-        width: @menu-width; height: 100%;
-        background-color: @light-gray;
-        border-left: solid 1px @border-color;
+        position: fixed; top: 0; left: 0;
+        width: @menu-width + @nav-width; height: 100%;
+        padding: 10px @gap @gap @gap+@nav-width;
+        background-color: @gray-dark;
         h1 {
-            margin: 0px;
-            padding: @gap @gap 10px;
+            margin: 0 0 27px;
             font-size: 26px;
             font-weight: 300;
         }
@@ -69,12 +68,12 @@ body {
             li {
                 list-style: none;
                 display: block;
+                margin-bottom: 22px;
                 a,
                 span {
                     display: block;
                     cursor: pointer;
-                    padding: 5px @gap 7px;
-                    color: @text-color;
+                    color: @light-gray;
                     font-weight: 300;
                     &:hover {
                         color: @primary-color;
@@ -87,21 +86,47 @@ body {
         width: 100%; height: 100%;
         position: fixed; top: 0; left: 0;
         z-index: 200;
-        background-color: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.3);
         display: none;
         > div {
             @gap: 15px;
-            width: 600px;
             display: none;
-            margin: 50px auto;
-            background-color: @secondary-color;
+            background-color: @gray-dark;
             color: @light-gray;
+            width: 500px; height: 100%;
+            position: absolute; top: 0; right: 0;
+            &.small {
+                width: 100%; height: 50px;
+                top: auto; bottom: 0;
+                input {
+                    border: 0;
+                    padding: 0;
+                }
+                footer {
+                    border: 0;
+                    display: inline-block;
+                    width: auto;
+                }
+            }
+            &#loading {
+                img {
+                    margin: 0 auto;
+                    display: block;
+                }
+            }
             header {
-                font-size: 22px;
-                border-bottom: solid 2px #222;
-                padding: @gap;
+                margin: 0;
+                font-size: 26px;
+                font-weight: 300;
+                padding: 10px @gap 12px;
                 position: relative;
+                text-transform: uppercase;
+                color: @gray;
                 button {
+                    .__icon();
+                    .__icon-close();
+                    font-size: 18px;
+                    color: @primary-color;
                     position: absolute; top: 0; right: 0;
                     appearance: none;
                     background: none;
@@ -122,9 +147,8 @@ body {
                     input,
                     textarea,
                     select {
-                        background-color: @secondary-color;
                         width: 100%;
-                        border: solid 2px #222;
+                        border-color: @gray-darkest;
                     }
                     select {
                         appearance: none;
@@ -142,15 +166,17 @@ body {
                 }
             }
             footer {
-                border-top: solid 2px #222;
+                border-top: solid 2px @gray;
                 text-align: right;
+                display: block; width: 100%;
+                position: absolute; bottom: 0; right: 0;
                 button, a {
                     appearance: none;
                     border: none;
                     background: none;
                     color: @light-gray;
                     padding: @gap;
-                    border-left: solid 2px #222;
+                    border-left: solid 2px @gray;
                     font-weight: 300;
                 }
             }

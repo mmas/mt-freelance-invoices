@@ -6,14 +6,20 @@ html {
 }
 h1, h2, h3, h4, h5, h6 {
     cursor: default;
+    font-weight: 300;
+    color: @gray;
+}
+h1, h2 {
+    text-transform: uppercase;
 }
 strong {
     font-weight: 500;
 }
 input, textarea, select {
-    border: solid 1px @border-color;
+    border: solid 2px @border-color;
     padding: 5px 8px;
     width: 400px;
+    background: none;
 }
 .inactive {
     opacity: 0.4;
@@ -21,7 +27,7 @@ input, textarea, select {
 }
 textarea {
     resize: none;
-    height: 113px;  // 5 rows
+    height: 115px;  // 5 rows
 }
 a, a:hover, a:visited {
     text-decoration: none;
@@ -32,10 +38,10 @@ table {
     &.full {
         width: 100%;
         th {
-            border-width: 0 0 2px;
+            border-width: 0;
         }
         td {
-            border-width: 1px 0;
+            border-width: 2px 0;
         }
     }
     &.transposed {
@@ -62,17 +68,20 @@ table {
             border-color: @error-color;
         }
     }
-}
-th, td {
-    text-align: left;
-    border-style: solid;
-    border-color: @border-color;
-    padding: 6px 7px;
-    vertical-align: top;
-    &.number {
-        text-align: right;
+    th, td {
+        text-align: left;
+        border-style: solid;
+        border-color: @border-color;
+        padding: 8px 7px;
+        vertical-align: top;
+        &.number {
+            text-align: right;
+        }
     }
-}
-th {
-    font-weight: 500;
+    th {
+        font-weight: 300;
+        font-size: 16px;
+        text-transform: uppercase;
+        color: @gray;
+    }
 }

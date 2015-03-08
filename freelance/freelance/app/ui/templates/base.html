@@ -22,7 +22,7 @@
         <script type="text/javascript" src="{% static 'js/main.min.js' %}"></script>
         {% endif %}
     </head>
-    <body>
+    <body id="{% block body_id %}{% endblock %}">
         {% block sidebar %}{% include "sidebar.html" %}{% endblock %}
         <section role="main">{% block main %}{% endblock %}</section>
         {% block menu %}{% endblock %}

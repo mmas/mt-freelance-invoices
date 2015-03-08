@@ -6,68 +6,86 @@
             @page {
                 size: a4 portrait;
                 @frame content_frame {
-                    -pdf-frame-border: 1;
                     left: 2cm;
                     top: 2cm;
                     width: 17cm;
                     height: 25.7cm;
                 }
             }
+            @font-face {
+                font-family: ubuntu;
+                src: url('{{static_root}}/fonts/Ubuntu/Ubuntu-Regular.ttf');
+            }
+            @font-face {
+                font-family: ubuntulight;
+                src: url('{{static_root}}/fonts/Ubuntu/Ubuntu-Light.ttf');
+            }
+            * {
+                font-size: 14px;
+                font-family: ubuntulight;
+            }
+            .b {
+                font-family: ubuntu;
+            }
+            .company-address {
+                text-align: right;
+                margin-bottom: 30px;
+            }
         </style>
     </head>
     <body>
-        <div class="company-address">
-            <span class="company-name">{{company_name}}</span><br>
-            {{company_address_html|safe}}
-        </div>
-        <div class="company-info">
-            {{company_info_html|safe}}
-        </div>
-        <div class="invoice-info">
-            <strong class="invoice-label">{% trans "Invoice" %}</strong><br>
-            Invoice number: {{number}}<br>
-            Date: {{date_formatted}}<br>
-        </div>
-        <div class="client-info">
-            <strong>{{client.name}}</strong>
-            {{client_html|safe}}
-        </div>
-        <div class="company-payment">
-            Please make payment payable to: <span class="company-name">{{company_name}}</span><br>
-            Bank account: {{company_account}}
-        </div>
-        <table class="description">
-            <thead>
-                <tr>
-                    <th>{% trans "Week ending" %}</th>
-                    <th>{% trans "Days worked" %}</th>
-                    <th>{% trans "Daily rate" %}</th>
-                    <th>{% trans "Total" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in days_worked_by_week %}
-                <tr>
-                    <td>{{day.week_ending__str}}</td>
-                    <td>{{day.days_worked}}</td>
-                    <td>{{day.daily_rate_html|safe}}</td>
-                    <td>{{day.total__str|safe}}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+        <table class="company-address">
+            <tr><td>{{company_name|upper}}</td></tr>
+            <tr><td>{{company_address|upper|linebreaksbr}}</td></tr>
         </table>
-        <table class="total">
+
+        {{company_info|linebreaksbr}}<br><br>
+
+        <span class="b">{% trans "INVOICE" %}</span><br>
+        Invoice number: {{number}}<br>
+        Date: {{date__str}}<br><br>
+
+        <span class="b">{{client.name}}</span><br>
+        {{client.address|linebreaksbr}}<br><br>
+
+        {% trans "Please make payment payable to" %}: <span>{{company_name|upper}}</span><br>
+        {% trans "Bank account" %}: {{company_account}}<br><br>
+
+        <table id="description">
             <tr>
-                <th>{% trans "Subtotal" %}</th>
-                <td>{{subtotal__str|safe}}</td>
+                <td class="b">{% trans "Week ending" %}</td>
+                <td class="b">{% trans "Days worked" %}</td>
+                <td class="b">{% trans "Daily rate" %}</td>
+                <td class="b">{% trans "Total" %}</td>
+            </tr>
+            {% for day in days_worked_by_week %}
+            <tr>
+                <td>{{day.week_ending__str}}</td>
+                <td>{{day.days_worked}}</td>
+                <td>{{day.daily_rate__str}}</td>
+                <td>{{day.total__str}}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <table>
+            <tr>
+                <td class="b">{% trans "Subtotal" %}</td>
+                <td>{{subtotal__str}}</td>
+                <td></td>
+                <td></td>
             </tr>
             <tr>
-                <th>{% trans "Total VAT" %} ({{tax_str}})</th>
-                <td>{{tax_total__str|safe}}</td>
+                <td class="b">{% trans "Total VAT" %} ({{tax__str}})</td>
+                <td>{{tax_total__str}}</td>
+                <td></td>
+                <td></td>
             </tr>
             <tr>
-                <th>{% trans "Total due" %}</th>
-                <td>{{total__str|safe}}</td>
+                <td class="b">{% trans "Total due" %}</td>
+                <td>{{total__str}}</td>
+                <td></td>
+                <td></td>
             </tr>
         </table>
     </body>

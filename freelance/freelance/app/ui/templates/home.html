@@ -2,6 +2,8 @@
 
 {% load i18n %}
 
+{% block body_id %}home{% endblock %}
+
 {% block sidebar %}{% include "sidebar.html" with section='home' %}{% endblock %}
 
 {% block main %}
@@ -9,21 +11,35 @@
 <section id="last-activity">
     <h1>{% trans "Last 90 days activity" %}</h1>
 
-    <h2>{% trans "Edited invoices" %}</h2>
-    {% include "partials/invoice_list.html" with object_list=last_edited_invoices %}
+    {% if last_edited_invoices %}
+    <section>
+        <h2>{% trans "Edited invoices" %}</h2>
+        {% include "partials/invoice_list.html" with object_list=last_edited_invoices %}
+    </section>
+    {% endif %}
 
-    <h2>{% trans "Draft invoices" %}</h2>
-    <h3>{% trans "Days and settings editable" %}</h3>
-    {% include "partials/invoice_list.html" with object_list=draft_invoices %}
+    {% if draft_invoices %}
+    <section>
+        <h2>{% trans "Draft invoices" %}</h2>
+        <h3>{% trans "Days and settings editable" %}</h3>
+        {% include "partials/invoice_list.html" with object_list=draft_invoices %}
+    </section>
+    {% endif %}
 
-    <h2>{% trans "Saved invoices" %}</h2>
-    <h3>{% trans "Pending to send to the client" %}</h3>
-    {% include "partials/invoice_list.html" with object_list=saved_invoices %}
+    {% if saved_invoices %}
+    <section>
+        <h2>{% trans "Saved invoices" %}</h2>
+        <h3>{% trans "Pending to send to the client" %}</h3>
+        {% include "partials/invoice_list.html" with object_list=saved_invoices %}
+    </section>
+    {% endif %}
 
-    <h2>{% trans "Money status" %}</h2>
-    <label>{% trans "Paid invoices" %}</label><br><span>{{money_status.paid}}</span><br>
-    <label>{% trans "Unpaid invoices" %}</label><br><span>{{money_status.unpaid}}</span><br>
-    <label>{% trans "Unsent invoices" %}</label><br><span>{{money_status.unsent}}</span><br>
+    <section class="money-status">
+        <h2>{% trans "Money status" %}</h2>
+        <div><label>{% trans "Paid invoices" %}</label><span>{{money_status.paid}}</span></div>
+        <div><label>{% trans "Unpaid invoices" %}</label><span>{{money_status.unpaid}}</span></div>
+        <div><label>{% trans "Unsent invoices" %}</label><span>{{money_status.unsent}}</span></div>
+    </section>
 
 </section>
 

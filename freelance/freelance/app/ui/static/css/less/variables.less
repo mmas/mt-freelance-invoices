@@ -27,15 +27,31 @@
         url('../fonts/fontello/fontello.svg?97882459#fontello') format('svg');
     font-weight: normal;
     font-style: normal;
+    font-family: 'fontello';
+    src: url('../fonts/fontello/fontello.eot?8231191');
+    src: url('../fonts/fontello/fontello.eot?8231191#iefix') format('embedded-opentype'),
+        url('../fonts/fontello/fontello.woff?8231191') format('woff'),
+        url('../fonts/fontello/fontello.ttf?8231191') format('truetype'),
+        url('../fonts/fontello/fontello.svg?8231191#fontello') format('svg');
+    font-weight: normal;
+    font-style: normal;
 }
 
-@primary-color: #00A0D1;
+@primary-color: #FE5E52;
 @secondary-color: #111315;
 @error-color: #F64536;
-@text-color: #3D3D3D;
-@border-color: #BBB;
-//@light-gray: #F0F0F0;
-@light-gray: #FAFBFB;
+
+@light-gray: #F3F4F4;
+@gray: #676b70;
+@gray-blue: #2A2E37;
+@gray-dark: #282A31;
+@gray-darkest: #222528;
+
+@border-color: @gray-dark;
+
+@gap: 20px;
+@nav-width: 52px;
+@menu-width: 270px;
 
 .__icon() {
     &:before {
@@ -47,24 +63,10 @@
         width: 1em;
         margin-right: .2em;
         text-align: center;
-        /* opacity: .8; */
-
-        /* For safety - reset parent styles, that can break glyph codes*/
         font-variant: normal;
         text-transform: none;
-
-        /* fix buttons height, for twitter bootstrap */
         line-height: 1em;
-
-        /* Animation center compensation - margins should be symmetric */
-        /* remove if not needed */
         margin-left: .2em;
-
-        /* you can be more comfortable with increased icons size */
-        /* font-size: 120%; */
-
-        /* Uncomment for 3D effect */
-        /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
     }
 }
 
@@ -83,6 +85,18 @@
 .__icon-down() {
     &:before { content: '\e804'; }
 }
+.__icon-selected() {
+    &:before { content: '\e805'; }
+}
+.__icon-deselected() {
+    &:before { content: '\e806'; }
+}
+.__icon-halfselected() {
+    &:before { content: '\e807'; }
+}
+.__icon-close() {
+    &:before { content: '\e808'; }
+}
 .__icon-home() {
     &:before { content: '\e80c'; }
 }
@@ -94,13 +108,4 @@
 }
 .__icon-up() {
     &:before { content: '\e80f'; }
-}
-.__icon-selected() {
-    &:before { content: '\e805'; }
-}
-.__icon-deselected() {
-    &:before { content: '\e806'; }
-}
-.__icon-halfselected() {
-    &:before { content: '\e807'; }
 }
