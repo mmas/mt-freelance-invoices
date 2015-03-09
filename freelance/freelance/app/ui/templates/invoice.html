@@ -166,7 +166,7 @@
         <button type="button" data-close></button>
     </header>
     <div class="content">
-        {% if object.created_from_days %}
+        {% if object.created_from == 0 %}
         <form>
             <div>
                 <label>{% trans "Invoice number" %}</label>
