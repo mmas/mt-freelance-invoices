@@ -204,8 +204,6 @@ widgets.Calendar = function(element, context) {
             $span = $('<span />').addClass('day-number').text(i + 1).appendTo($cell);
         }
 
-        // $calendar = $('#' + element.id);
-        // this.$element = $calendar;
         if (trigger) $calendar.trigger('widgets.calendar:render', [date]);
     }
 };
