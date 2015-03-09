@@ -56,7 +56,7 @@ views.Invoice = function(data) {
         }
         else {  // From file.
             if (!data.pdf) {
-                $file = $('[name="pdf"]')
+                $file = $('[name="pdf"]');
                 $file.click();
                 $file.bind('change', function(e) {
                     if (e.target.files.length) update('file', e.target.files[0]);

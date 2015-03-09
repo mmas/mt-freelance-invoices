@@ -152,12 +152,12 @@
     {{/errors}}
     {% endverbatim %}
 </script>
-<input type="file" name="pdf" style="display:none;">
 <article id="sheet"></article>
 {% endblock %}
 
 {% block menu %}
 <aside role="menu" id="menu"></aside>
+<input type="file" name="pdf" style="position:absolute;width:1px;height:1px;left:-100px;">{# To be clickable by javascript it can't have display:none; #}
 {% endblock %}
 
 {% block popups %}
