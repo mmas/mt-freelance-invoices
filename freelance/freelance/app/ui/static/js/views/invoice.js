@@ -40,33 +40,34 @@ views.Invoice = function(data) {
         renderInfo();
         view.popups = {
             'loading': utils.popup('loading'),
-            'settings': utils.popup('settings', {'widgets.popup:accept': function() { update(); }}),
+            'settings': utils.popup('settings', {'accept': function() { update(); }}),
             'info': utils.popup('info'),
             'delete': utils.popup('delete-confirmation'),
             'error400': utils.popup('error400-message'),
             'error500': utils.popup('error500-message'),
-            'save': utils.popup('save-confirmation', {'widgets.popup:accept': function() { update('save'); }}),
+            'save': utils.popup('save-confirmation', {'accept': function() { update('save'); }}),
             'sent': utils.popup('sent-confirmation'),
-            'password': utils.popup('email-password', {'widgets.popup:accept': function(e) { email($(e.target).find('input[type="password"]').val()); }}),
+            'password': utils.popup('email-password', {'accept': onAcceptPassword}),
+            'upload': utils.popup('upload-file', {'accept': onAcceptUpload}),
         };
         if (data.created_from == 0) {  // From calendar.
-            if (!data.client) {
-                view.popups.settings.open();
-            }
+            if (!data.client) view.popups.settings.open();
         }
         else {  // From file.
-            if (!data.pdf) {
-                $file = $('[name="pdf"]');
-                $file.click();
-                $file.bind('change', function(e) {
-                    if (e.target.files.length) update('file', e.target.files[0]);
-                });
-            }
-            else if (!data.client) {
-                view.popups.settings.open();
-            }
+            if (!data.pdf) view.popups.upload.open();
+            else if (!data.client) view.popups.settings.open();
         }
     });
+
+    function onAcceptPassword(e) {
+        email($(e.target).find('input[type="password"]').val());
+    }
+
+    function onAcceptUpload(e) {
+        var pdf;
+        pdf = $(e.target).find('[name="pdf"]')[0];
+        if (pdf.files.length) update('file', pdf.files[0]);
+    }
 
     function clean() {
         data.company_address = data.company_address.replace(/\n/g, '<br>');

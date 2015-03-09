@@ -157,7 +157,6 @@
 
 {% block menu %}
 <aside role="menu" id="menu"></aside>
-<input type="file" name="pdf" style="position:absolute;width:1px;height:1px;left:-100px;">{# To be clickable by javascript it can't have display:none; #}
 {% endblock %}
 
 {% block popups %}
@@ -238,6 +237,15 @@
     <div class="content">
         <img src="{% static 'img/loading.gif' %}">
     </div>
+</div>
+<div id="upload-file" class="small">
+    <div class="content">
+        <input type="file" name="pdf">
+    </div>
+    <footer>
+        <button type="button" data-close>{% trans "Cancel" %}</button>
+        <button type="button" data-accept>{% trans "OK" %}</button>
+    </footer>
 </div>
 <div id="delete-confirmation" class="small">
     <div class="content">

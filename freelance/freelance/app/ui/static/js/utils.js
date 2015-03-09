@@ -3,7 +3,7 @@ utils = {};
 utils.popup = function(id, events) {
     var popup, i;
     popup = new widgets.Popup(document.getElementById(id));
-    if (events) for (i in events) popup.$element.bind(i, events[i]);
+    if (events) for (i in events) popup.$element.bind('widgets.popup:'+i, events[i]);
     return popup;
 }
 
