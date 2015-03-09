@@ -75,7 +75,7 @@
     <li><span {{#saved}} class="inactive"{{/saved}}{{^saved}} onclick="view.popups.save.open();"{{/saved}}>{% endverbatim %}{% trans "Save" %}{% verbatim %}</span></li>
     <li><span{{#saved}} onclick="view.popups.password.open();"{{/saved}}{{^saved}} class="inactive"{{/saved}}>{% endverbatim %}{% trans "Email" %}{% verbatim %}</span></li>
     <li><a{{#saved}} href="{{pdf}}" download{{/saved}}{{^saved}} class="inactive"{{/saved}}>{% endverbatim %}{% trans "Download" %}{% verbatim %}</a></li>
-    <li><span{{#sent}} onclick="view.update('paid');"{{/sent}}{{^sent}} class="inactive"{{/sent}}>{% endverbatim %}{% trans "Set as paid" %}{% verbatim %}</span></li>
+    <li><span{{#saved}}{{#paid}} class="inactive"{{/paid}}{{^paid}} onclick="view.update('paid');"{{/paid}}{{/saved}}{{^saved}} class="inactive"{{/saved}}>{% endverbatim %}{% trans "Set as paid" %}{% verbatim %}</span></li>
     <li><span{{#saved}} class="inactive"{{/saved}}{{^saved}} onclick="view.popups.settings.open();"{{/saved}}>{% endverbatim %}{% trans "Settings" %}{% verbatim %}</span></li>
     <li><span onclick="view.popups.info.open();">{% endverbatim %}{% trans "Info" %}{% verbatim %}</span></li>
     <li><span onclick="view.popups.delete.open();">{% endverbatim %}{% trans "Delete" %}{% verbatim %}</span></li>
@@ -174,7 +174,7 @@
             </div>
             <div>
                 <label>{% trans "Date" %}</label>
-                <input type="text" name="date" value="{{object.date|date:'Y-m-d'}}">
+                <input type="text" name="date" value="{{object.date__str}}">
             </div>
             <div>
                 <label>{% trans "Client" %}</label>
@@ -201,7 +201,7 @@
             </div>
             <div>
                 <label>{% trans "Date" %}</label>
-                <input type="text" name="date" value="{{object.date|date:'Y-m-d'}}">
+                <input type="text" name="date" value="{{object.date__str}}">
             </div>
             <div>
                 <label>{% trans "Client" %}</label>

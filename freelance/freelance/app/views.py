@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError
@@ -10,8 +10,6 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.views import generic
-
-from dateutil import parser
 
 from freelance.app.models import Invoice, Client, Day, Settings
 from freelance.app import utils
@@ -199,8 +197,9 @@ class InvoiceView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InvoiceView, self).get_context_data(**kwargs)
-        ctx['object_json'] = utils.serialize_invoice(
-            self.object, self.request.user.settings)
+        ctx['object'] = utils.serialize_invoice(
+            self.object, self.request.user.settings, as_json=False)
+        ctx['object_json'] = utils.serialize(ctx['object'])
         ctx['clients'] = Client.objects.all()
         return ctx
 
@@ -260,7 +259,13 @@ class InvoiceJsonView(JsonMixin, LoginRequiredMixin, generic.View):
                     v = Client.objects.get(pk=v)
                 elif k.startswith('date'):
                     # Convert before saving to keep date as a DateTime object.
-                    v = parser.parse(v)
+                    try:
+                        # User date format.
+                        v = datetime.strptime(
+                            v, request.user.settings.date_format)
+                    except ValueError:
+                        # ISO date format.
+                        v = datetime.strptime(v, '%Y-%m-%d')
                 setattr(invoice, k, v)
         invoice.save(usettings=request.user.settings)
         return self._invoice_response(invoice)
