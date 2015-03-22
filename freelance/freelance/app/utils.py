@@ -83,7 +83,8 @@ def email_invoice(invoice, usettings, password):
                            port=usettings.email_smtp_port,
                            username=usettings.email_address,
                            password=password,
-                           use_tls=True)
+                           use_tls=(usettings.email_protocol == 0),
+                           use_ssl=(usettings.email_protocol == 1))
     email = EmailMessage(invoice.number, '', usettings.email_address,
                          [invoice.client.email], connection=backend)
     email.attach_file(invoice.pdf.path)

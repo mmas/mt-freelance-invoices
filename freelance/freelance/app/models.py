@@ -202,6 +202,8 @@ class Settings(models.Model):
     email_address = models.CharField(max_length=100, blank=True)
     email_smtp = models.CharField(max_length=100, default='smtp.gmail.com')
     email_smtp_port = models.IntegerField(default=587)
+    email_protocol = models.IntegerField(
+        default=0, choices=((0, 'tls'), (1, 'ssl')))
     company_name = models.CharField(max_length=100, blank=True)
     company_address = models.TextField(blank=True)
     company_info = models.TextField(blank=True)
